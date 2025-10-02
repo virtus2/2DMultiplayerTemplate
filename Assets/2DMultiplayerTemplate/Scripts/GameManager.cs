@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private NetworkObject playerCharacterPrefab;
+    [SerializeField] private NetworkObject aiCharacterPrefab;
 
     private NetworkManager networkManager;
 
@@ -44,6 +45,30 @@ public class GameManager : MonoBehaviour
                     StartClient();
                 }
             }
+            else
+            {
+                if (GUILayout.Button("Create AI Character"))
+                {
+                    Vector2 randomPosition = Random.insideUnitCircle * 5f;
+                    CreateAICharacter(randomPosition, Quaternion.identity);
+                }
+                if (GUILayout.Button("Create AI Character x100"))
+                {
+                    for (int i = 0; i < 100; i++)
+                    {
+                        Vector2 randomPosition = Random.insideUnitCircle * 5f;
+                        CreateAICharacter(randomPosition, Quaternion.identity);
+                    }
+                }
+                if (GUILayout.Button("Create AI Character x1000"))
+                {
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        Vector2 randomPosition = Random.insideUnitCircle * 5f;
+                        CreateAICharacter(randomPosition, Quaternion.identity);
+                    }
+                }
+            }
         }
     }
 
@@ -74,6 +99,15 @@ public class GameManager : MonoBehaviour
     {
         playerCharacterPrefab.InstantiateAndSpawn(networkManager,
             ownerClientId: clientId,
+            position: position,
+            rotation: rotation
+        );
+    }
+
+    private void CreateAICharacter(in Vector3 position, in Quaternion rotation)
+    {
+        aiCharacterPrefab.InstantiateAndSpawn(networkManager,
+            ownerClientId: 0,
             position: position,
             rotation: rotation
         );

@@ -105,10 +105,10 @@ GameObject:
   - component: {fileID: 4347424962661791704}
   - component: {fileID: 629533877819066296}
   - component: {fileID: 123008652995376605}
-  - component: {fileID: -5881390288688126875}
+  - component: {fileID: 1507648926318149251}
   - component: {fileID: 7516833608468272135}
   m_Layer: 0
-  m_Name: PlayerCharacter
+  m_Name: AICharacter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1699602790
+  GlobalObjectIdHash: 497249026
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -282,7 +282,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 629533877819066296}
---- !u!114 &-5881390288688126875
+--- !u!114 &1507648926318149251
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -291,9 +291,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3162571151937909349}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81c4e80fc641d4c4e93f191d99aa1678, type: 3}
+  m_Script: {fileID: 11500000, guid: 740dda9b90378514aa45ae996cc00f9d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerCharacter
+  m_EditorClassIdentifier: Assembly-CSharp::AICharacter
   ShowTopMostFoldoutHeaderGroup: 1
   Input:
     Move: {x: 0, y: 0}
@@ -303,7 +303,7 @@ MonoBehaviour:
   animator: {fileID: 629533877819066296}
   stateMachine: {fileID: 7516833608468272135}
   movementVector: {x: 0, y: 0}
-  clientInput:
+  aiInput:
     Move: {x: 0, y: 0}
     Attack: 0
 --- !u!114 &7516833608468272135

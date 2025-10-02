@@ -653,6 +653,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   playerCharacterPrefab: {fileID: 2960817192275098128, guid: d2408b49b24d3a94a98a6ef4235230ea, type: 3}
+  aiCharacterPrefab: {fileID: 2960817192275098128, guid: bead2b48848cbde41af82b1329906aaf, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

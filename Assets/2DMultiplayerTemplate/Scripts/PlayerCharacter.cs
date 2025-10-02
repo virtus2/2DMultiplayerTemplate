@@ -1,55 +1,63 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerCharacter : NetworkBehaviour
+public class PlayerCharacter : Character
 {
-    [SerializeField] private Rigidbody2D rb;
+    [Header("Player Character")]
+    [SerializeField] private CharacterControlInput clientInput;
 
-    [SerializeField] private float moveSpeed = 1f;
-    [SerializeField] private Vector2 movementVector;
-
+    private Player ownerPlayer;
+    
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
         name = $"{nameof(PlayerCharacter)} - {OwnerClientId}";
+        SetOwnerPlayer();
+    }
 
+    public void SetOwnerPlayer()
+    {
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(OwnerClientId, out NetworkClient client))
             return;
 
         if (OwnerClientId != NetworkManager.LocalClientId)
             return;
 
-        Player player = client.PlayerObject.GetComponent<Player>();
-        player.SetPlayerCharacter(this);
+        ownerPlayer = client.PlayerObject.GetComponent<Player>();
+        ownerPlayer.SetPlayerCharacter(this);
     }
 
-    public void HandleMoveInput(in Vector2 moveInput)
+    protected override void InitializeStateMachine()
+    {
+        stateMachine.AddState(ECharacterState.Idle, new IdleState(this, stateMachine));
+        stateMachine.AddState(ECharacterState.Walk, new WalkState(this, stateMachine));
+    }
+
+    protected override void HandleInput()
     {
         if (HasAuthority)
         {
-            Move(moveInput);
+            if (IsOwner)
+            {
+                Input = clientInput;
+            }
         }
         else
         {
-            MoveRpc(moveInput);
+            SendInputRpc(clientInput);
         }
     }
 
     [Rpc(SendTo.Authority)]
-    public void MoveRpc(Vector2 moveInput)
+    private void SendInputRpc(CharacterControlInput input)
     {
-        Move(moveInput);
+        Debug.Log($"SendInputRpc {input.Move}");
+        Input = input;
     }
 
-    public void Move(in Vector2 moveInput)
+    public void HandleMoveInput(in Vector2 moveInput)
     {
-        movementVector = new Vector2(moveInput.x * moveSpeed, moveInput.y* moveSpeed);
-    }
-
-    private void FixedUpdate()
-    {
-        Vector2 targetPosition = rb.position + movementVector;
-        rb.MovePosition(targetPosition);
+        clientInput.Move = moveInput;
     }
 }
