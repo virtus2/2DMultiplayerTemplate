@@ -1,97 +1,162 @@
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
+
+
+public enum EMainMenuState
+{
+    None,
+
+    Main,
+    Singleplayer,
+    Multiplayer,
+    MultiplayerJoinIP,
+
+    Option,
+}
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
+
+    private NetworkManager networkManager;
+    private ConnectionManager connectionManager;
+
     [SerializeField] private NetworkObject playerCharacterPrefab;
     [SerializeField] private NetworkObject aiCharacterPrefab;
 
-    private NetworkManager networkManager;
+    [Header("MainMenu")]
+    // MainMenu
+    [SerializeField] private EMainMenuState mainMenuState;
+    private string ipAddress = "127.0.0.1";
+    private string port = "7777";
+    
 
     private void Awake()
     {
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
     }
 
     private void Start()
     {
+        connectionManager = ConnectionManager.Instance;
         networkManager = NetworkManager.Singleton;
-        networkManager.OnClientConnectedCallback += OnClientConnected;
+        mainMenuState = EMainMenuState.Main;
     }
 
     private void OnDestroy()
     {
-        networkManager.OnClientConnectedCallback -= OnClientConnected;
     }
+
+    private void ChangeMainMenu(EMainMenuState state)
+    {
+        mainMenuState = state;
+    }
+
 
     private void OnGUI()
     {
-        if(networkManager)
+        if(connectionManager.CurrentConnectionState == EConnectionState.Offline)
         {
-            if(!networkManager.IsServer && !networkManager.IsClient)
+            switch (mainMenuState)
             {
-                if (GUILayout.Button("Start Server"))
-                {
-                    StartServer();
-                }
-                if (GUILayout.Button("Start Host"))
-                {
-                    StartHost();
-                }
-                if (GUILayout.Button("Start Client"))
-                {
-                    networkManager.OnClientConnectedCallback -= OnClientConnected;
-                    StartClient();
-                }
+                case EMainMenuState.Main:
+                    if (GUILayout.Button("Singleplayer"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Singleplayer);
+                    }
+                    if (GUILayout.Button("Multiplayer"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Multiplayer);
+                    }
+                    if (GUILayout.Button("Option"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Option);
+                    }
+                    if (GUILayout.Button("Quit"))
+                    {
+                        RequestQuit();
+                    }
+
+                    break;
+                case EMainMenuState.Singleplayer:
+                    if (GUILayout.Button("Back"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Main);
+                    }
+                    break;
+                case EMainMenuState.Multiplayer:
+                    if (GUILayout.Button("Join via IP"))
+                    {
+                        ChangeMainMenu(EMainMenuState.MultiplayerJoinIP);
+                    }
+                    if (GUILayout.Button("Join via Steam"))
+                    {
+                        connectionManager.ShowSteamFriendOverlay();
+                    }
+                    if (GUILayout.Button("Host"))
+                    {
+                        connectionManager.StartHost();
+                        ChangeMainMenu(EMainMenuState.None);
+                    }
+                    if (GUILayout.Button("Back"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Main);
+                    }
+                    break;
+
+                case EMainMenuState.MultiplayerJoinIP:
+                    GUILayout.Label("Enter IP:");
+                    ipAddress = GUILayout.TextField(ipAddress);
+
+                    GUILayout.Label("Enter port:");
+                    port = GUILayout.TextField(port);
+
+                    if (GUILayout.Button("Join"))
+                    {
+                        if (ushort.TryParse(port, out ushort result))
+                        {
+                            connectionManager.StartClientIP(ipAddress, result);
+                            ChangeMainMenu(EMainMenuState.None);
+                        }
+                    }
+                    if (GUILayout.Button("Back"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Multiplayer);
+                    }
+                    break;
+
+                case EMainMenuState.Option:
+                    if (GUILayout.Button("Back"))
+                    {
+                        ChangeMainMenu(EMainMenuState.Main);
+                    }
+                    break;
+                default:
+
+                    break;
             }
-            else
+        }
+        else
+        {
+            GUILayout.Label($"isServer: {networkManager.IsServer}");
+            GUILayout.Label($"isHost: {networkManager.IsHost}");
+            GUILayout.Label($"isClient: {networkManager.IsClient}");
+            if (GUILayout.Button("Invite"))
             {
-                if (GUILayout.Button("Create AI Character"))
-                {
-                    Vector2 randomPosition = Random.insideUnitCircle * 5f;
-                    CreateAICharacter(randomPosition, Quaternion.identity);
-                }
-                if (GUILayout.Button("Create AI Character x100"))
-                {
-                    for (int i = 0; i < 100; i++)
-                    {
-                        Vector2 randomPosition = Random.insideUnitCircle * 5f;
-                        CreateAICharacter(randomPosition, Quaternion.identity);
-                    }
-                }
-                if (GUILayout.Button("Create AI Character x1000"))
-                {
-                    for (int i = 0; i < 1000; i++)
-                    {
-                        Vector2 randomPosition = Random.insideUnitCircle * 5f;
-                        CreateAICharacter(randomPosition, Quaternion.identity);
-                    }
-                }
+                connectionManager.OpenFriendOverlayForGameInvite();
+            }
+            if (GUILayout.Button("Disconnect"))
+            {
+                ChangeMainMenu(EMainMenuState.Main);
+                connectionManager.Disconnect();
             }
         }
     }
 
-    private void StartServer()
+    public void HandleClientConnected(ulong clientId)
     {
-        networkManager.StartServer();
-    }
-
-    private void StartHost()
-    {
-        networkManager.StartHost();
-    }
-
-    private void StartClient()
-    {
-        networkManager.StartClient();
-    }
-
-    private void OnClientConnected(ulong clientId)
-    {
-        if (!networkManager.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
-            return;
-
         CreatePlayerCharacter(clientId, Vector3.zero, Quaternion.identity);
     }
 
@@ -111,5 +176,11 @@ public class GameManager : MonoBehaviour
             position: position,
             rotation: rotation
         );
+    }
+
+    public void RequestQuit()
+    {
+
+        Application.Quit();
     }
 }

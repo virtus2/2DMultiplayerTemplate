@@ -52,7 +52,6 @@ public class PlayerCharacter : Character
     [Rpc(SendTo.Authority)]
     private void SendInputRpc(CharacterControlInput input)
     {
-        Debug.Log($"SendInputRpc {input.Move}");
         Input = input;
     }
 
