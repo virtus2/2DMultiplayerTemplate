@@ -21,6 +21,29 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void OnLook(CallbackContext context)
+    {
+        Vector2 lookInput = context.ReadValue<Vector2>();
+
+        Vector2 mouseScreenPosition = Mouse.current.position.ReadValue();
+        float distanceFromCamera = 10f;
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, distanceFromCamera));
+        if (playerCharacter)
+        {
+            playerCharacter.HandleMousePosition(worldPosition);
+        }
+    }
+
+    public void OnAttack(CallbackContext context)
+    {
+        bool attackInput = context.ReadValueAsButton();
+
+        if (playerCharacter)
+        {
+            playerCharacter.HandleAttackInput(attackInput);
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

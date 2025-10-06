@@ -32,6 +32,7 @@ public class PlayerCharacter : Character
     {
         stateMachine.AddState(ECharacterState.Idle, new IdleState(this, stateMachine));
         stateMachine.AddState(ECharacterState.Walk, new WalkState(this, stateMachine));
+        stateMachine.AddState(ECharacterState.Attack, new AttackState(this, stateMachine));
     }
 
     protected override void HandleInput()
@@ -58,5 +59,17 @@ public class PlayerCharacter : Character
     public void HandleMoveInput(in Vector2 moveInput)
     {
         clientInput.Move = moveInput;
+    }
+
+    public void HandleMousePosition(in Vector3 worldPosition)
+    {
+        Vector3 lookVector = worldPosition - transform.position;
+        lookVector.Normalize();
+        clientInput.Look = new Vector2(lookVector.x, lookVector.y);
+    }
+
+    public void HandleAttackInput(bool attackInput)
+    {
+        clientInput.Attack = attackInput;
     }
 }

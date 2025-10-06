@@ -6,6 +6,7 @@ public enum ECharacterState
 {
     Idle,
     Walk,
+    Attack,
 }
 
 public class StateMachine : NetworkBehaviour

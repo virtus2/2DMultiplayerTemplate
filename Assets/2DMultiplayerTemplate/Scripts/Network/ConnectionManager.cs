@@ -53,6 +53,7 @@ public class ConnectionManager : MonoBehaviour
     private void Start()
     {
         networkManager = NetworkManager.Singleton;
+        networkManager.LogLevel = LogLevel.Developer;
         CurrentConnectionState = EConnectionState.Offline;
 
 #if UNITY_EDITOR 

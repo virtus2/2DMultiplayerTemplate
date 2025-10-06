@@ -58,6 +58,7 @@ public class ConnectionMethodSteam : ConnectionMethod
     {
         if (currentLobby.HasValue)
         {
+            Debug.Log($"SetupClientConnection: targetSteamId is ({currentLobby.Value.Owner.Id})");
             facepunchTransport.targetSteamId = currentLobby.Value.Owner.Id;
         }
         else
@@ -145,6 +146,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     private async void HandleGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
     {
+        // Called when the user tries to join a lobby from their friends list game client should attempt to connect to specified lobby when this is received
         Debug.Log($"HandleGameLobbyJoinRequested: lobby({lobby}), SteamId({steamId})");
         bool isOwner = lobby.Owner.Id.Equals(steamId);
 
@@ -155,6 +157,7 @@ public class ConnectionMethodSteam : ConnectionMethod
             return;
         }
 
+        currentLobby = lobby;
         SteamId lobbdyOwnerId = lobby.Owner.Id;
     }
 

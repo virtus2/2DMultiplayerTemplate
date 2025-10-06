@@ -11,6 +11,9 @@ public enum EMainMenuState
     Multiplayer,
     MultiplayerJoinIP,
 
+    SelectSaveFile,
+    NewSave,
+
     Option,
 }
 
@@ -26,23 +29,23 @@ public class GameManager : MonoBehaviour
 
     [Header("MainMenu")]
     // MainMenu
-    [SerializeField] private EMainMenuState mainMenuState;
+    [SerializeField] private EMainMenuState prevMainMenuState;
+    [SerializeField] private EMainMenuState currMainMenuState;
     private string ipAddress = "127.0.0.1";
     private string port = "7777";
     
-
     private void Awake()
     {
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
     }
 
     private void Start()
     {
         connectionManager = ConnectionManager.Instance;
         networkManager = NetworkManager.Singleton;
-        mainMenuState = EMainMenuState.Main;
+        prevMainMenuState = EMainMenuState.None;
+        currMainMenuState = EMainMenuState.Main;
     }
 
     private void OnDestroy()
@@ -51,15 +54,19 @@ public class GameManager : MonoBehaviour
 
     private void ChangeMainMenu(EMainMenuState state)
     {
-        mainMenuState = state;
+        prevMainMenuState = currMainMenuState;
+        currMainMenuState = state;
     }
-
+    private void BackToPreviousMenu()
+    {
+        ChangeMainMenu(prevMainMenuState);
+    }
 
     private void OnGUI()
     {
         if(connectionManager.CurrentConnectionState == EConnectionState.Offline)
         {
-            switch (mainMenuState)
+            switch (currMainMenuState)
             {
                 case EMainMenuState.Main:
                     if (GUILayout.Button("Singleplayer"))
@@ -83,7 +90,7 @@ public class GameManager : MonoBehaviour
                 case EMainMenuState.Singleplayer:
                     if (GUILayout.Button("Back"))
                     {
-                        ChangeMainMenu(EMainMenuState.Main);
+                        BackToPreviousMenu();
                     }
                     break;
                 case EMainMenuState.Multiplayer:
@@ -102,7 +109,7 @@ public class GameManager : MonoBehaviour
                     }
                     if (GUILayout.Button("Back"))
                     {
-                        ChangeMainMenu(EMainMenuState.Main);
+                        BackToPreviousMenu();
                     }
                     break;
 
@@ -123,14 +130,21 @@ public class GameManager : MonoBehaviour
                     }
                     if (GUILayout.Button("Back"))
                     {
-                        ChangeMainMenu(EMainMenuState.Multiplayer);
+                        BackToPreviousMenu();
+                    }
+                    break;
+
+                case EMainMenuState.SelectSaveFile:
+                    if(GUILayout.Button("Back"))
+                    {
+                        BackToPreviousMenu();
                     }
                     break;
 
                 case EMainMenuState.Option:
                     if (GUILayout.Button("Back"))
                     {
-                        ChangeMainMenu(EMainMenuState.Main);
+                        BackToPreviousMenu();
                     }
                     break;
                 default:
@@ -180,7 +194,6 @@ public class GameManager : MonoBehaviour
 
     public void RequestQuit()
     {
-
         Application.Quit();
     }
 }

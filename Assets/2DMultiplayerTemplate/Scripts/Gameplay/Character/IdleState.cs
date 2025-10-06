@@ -26,5 +26,11 @@ public class IdleState : IState
             stateMachine.TransitionTo(ECharacterState.Walk);
             return;
         }
+
+        if (character.Input.Attack)
+        {
+            stateMachine.TransitionTo(ECharacterState.Attack);
+            return;
+        }
     }
 }
