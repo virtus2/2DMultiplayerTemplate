@@ -56,6 +56,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     public override void SetupClientConnection()
     {
+        SetConnectionPayload(playerSteamId.ToString(), playerSteamName);
         if (currentLobby.HasValue)
         {
             Debug.Log($"SetupClientConnection: targetSteamId is ({currentLobby.Value.Owner.Id})");
@@ -80,14 +81,15 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     public override void SetupHostConnection()
     {
+        SetConnectionPayload(playerSteamId.ToString(), playerSteamName);
     }
 
-    public override void OnHostStartedSuccessfully()
+    public override void HandleHostStartedSuccessfully()
     {
         CreateLobby();
     }
 
-    public override void OnHostStartFailed()
+    public override void HandleHostStartFailed()
     {
         Debug.Log("Host start failed");
     }

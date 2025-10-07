@@ -18,8 +18,8 @@ public abstract class ConnectionMethod
     /// <returns></returns>
     public abstract void SetupHostConnection();
 
-    public abstract void OnHostStartedSuccessfully();
-    public abstract void OnHostStartFailed();
+    public abstract void HandleHostStartedSuccessfully();
+    public abstract void HandleHostStartFailed();
 
     /// <summary>
     /// Setup the client connection prior to starting the NetworkManager

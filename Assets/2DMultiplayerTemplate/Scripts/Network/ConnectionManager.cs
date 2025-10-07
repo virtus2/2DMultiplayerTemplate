@@ -1,6 +1,5 @@
 using Netcode.Transports.Facepunch;
-using Steamworks.Data;
-using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -8,22 +7,38 @@ using UnityEngine;
 public enum EConnectionState
 {
     Offline,
-    Online,
+    
+    StartingHost,
+    Hosting,
+    
+    ClientConnecting,
+    ClientConnected,
+
+    StartingServer,
 }
 
 public class ConnectionManager : MonoBehaviour
 {
     public static ConnectionManager Instance;
+
+    public ConnectionMethod ConnectionMethod { get; private set; }
+    public bool IsSteam => ConnectionMethod is ConnectionMethodSteam;
+
     public EConnectionState CurrentConnectionState;
+
 
     [SerializeField] private int maxConnectedPlayers = 4;
 
     private NetworkManager networkManager;
-    private Lobby? currentLobby;
-    private bool isInLobby;
 
-    public bool IsSteam => connectionMethod is ConnectionMethodSteam;
-    ConnectionMethod connectionMethod;
+    private ConnectionState currentState;
+    private Dictionary<EConnectionState, ConnectionState> connectionStates = new Dictionary<EConnectionState, ConnectionState>();
+    private OfflineState offlineState;
+    private StartingHostState startingHostState;
+    private HostingState hostingState;
+    private ClientConnectingState clientConnectingState;
+    private ClientConnectedState clientConnectedState;
+
 
     [Header("Unity Transport")]
     [SerializeField] private UnityTransport unityTransport;
@@ -44,6 +59,10 @@ public class ConnectionManager : MonoBehaviour
         unityTransport.enabled = true;
 #endif
 
+    // TODO: Dedicated Server
+#if UNITY_SERVER
+#endif
+
 #if !UNITY_EDITOR
         facepunchTransport.gameObject.SetActive(true);
         facepunchTransport.enabled = true;
@@ -53,29 +72,49 @@ public class ConnectionManager : MonoBehaviour
     private void Start()
     {
         networkManager = NetworkManager.Singleton;
-        networkManager.LogLevel = LogLevel.Developer;
+        networkManager.LogLevel = Unity.Netcode.LogLevel.Developer;
+
+        offlineState = new OfflineState(this);
+        startingHostState = new StartingHostState(this);
+        hostingState = new HostingState(this);
+        clientConnectingState = new ClientConnectingState(this);
+        clientConnectedState = new ClientConnectedState(this);
+
+        connectionStates.Add(EConnectionState.Offline, offlineState);
+        connectionStates.Add(EConnectionState.StartingHost, startingHostState);
+        connectionStates.Add(EConnectionState.Hosting, hostingState);
+        connectionStates.Add(EConnectionState.ClientConnecting, clientConnectingState);
+        connectionStates.Add(EConnectionState.ClientConnected, clientConnectedState);
+
         CurrentConnectionState = EConnectionState.Offline;
 
-#if UNITY_EDITOR 
-        connectionMethod = new ConnectionMethodUnityTransport(this, maxConnectedPlayers, ipAddress, port);
+        currentState = offlineState;
+
+#if UNITY_EDITOR
+        ConnectionMethod = new ConnectionMethodUnityTransport(this, maxConnectedPlayers, ipAddress, port);
 #endif
 
 #if !UNITY_EDITOR
         connectionMethod = new ConnectionMethodSteam(this, maxConnectedPlayers, facepunchTransport);
 #endif
 
-        Application.quitting += connectionMethod.HandleApplicationQuit;
-        networkManager.OnClientConnectedCallback += HandleClientConnected;
-        networkManager.OnClientDisconnectCallback += HandleClientDisconnect;
-        networkManager.OnServerStopped += HandleOnServerStopped;
+        Application.quitting += ConnectionMethod.HandleApplicationQuit;
+        networkManager.OnConnectionEvent += HandleConnectionEvent;
+        networkManager.ConnectionApprovalCallback += HandleConnectionApproval;
+        networkManager.OnServerStarted += HandleServerStarted;
+        networkManager.OnServerStopped += HandleServerStopped;
+        networkManager.OnTransportFailure += HandleTransportFailure;
     }
-
 
     private void OnDisable()
     {
         CurrentConnectionState = EConnectionState.Offline;
 
-        networkManager.OnClientConnectedCallback -= HandleClientConnected;
+        Application.quitting -= ConnectionMethod.HandleApplicationQuit;
+        networkManager.OnConnectionEvent -= HandleConnectionEvent;
+        networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;
+        networkManager.OnServerStarted -= HandleServerStarted;
+        networkManager.OnServerStopped -= HandleServerStopped;
     }
 
     private void OnApplicationQuit()
@@ -83,88 +122,83 @@ public class ConnectionManager : MonoBehaviour
 
     }
 
-    private void HandleClientConnected(ulong clientId)
+    public void ChangeState(EConnectionState newState)
     {
-        Debug.Log($"HandleClientConnected: clientId({clientId})");
-        if (!networkManager.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
-            return;
-
-        bool hasAuthority = networkManager.IsServer || networkManager.IsHost;
-        if (hasAuthority)
+        if (currentState != null)
         {
-            Debug.Log($"CreatePlayerCharacter: clientId({clientId})");
-            GameManager.Instance.HandleClientConnected(clientId);
+            currentState.Exit();
+        }
+        CurrentConnectionState = newState;
+        currentState = connectionStates[newState];
+        currentState.Enter();
+    }
+
+    private void HandleConnectionEvent(NetworkManager networkManager, ConnectionEventData connectionEventData)
+    {
+        switch (connectionEventData.EventType)
+        {
+            case ConnectionEvent.ClientConnected:
+                HandleClientConnected(connectionEventData.ClientId);
+                break;
+            case ConnectionEvent.ClientDisconnected:
+                HandleClientDisconnected(connectionEventData.ClientId);
+                break;
         }
     }
 
-    private void HandleClientDisconnect(ulong clientId)
+    private void HandleConnectionApproval(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
-        Debug.Log($"clientId({clientId}) disconnected");
+        currentState.HandleConnectionApproval(request, response);
     }
 
-    private void HandleOnServerStopped(bool isHost)
+    private void HandleClientConnected(ulong clientId)
     {
-        bool isDedicatedServer = !isHost;
+        currentState.HandleClientConnected(clientId);
+    }
+
+    private void HandleClientDisconnected(ulong clientId)
+    {
+        Debug.Log($"clientId({clientId}) disconnected");
+        currentState.HandleClientDisconnected(clientId);
+    }
+    private void HandleServerStarted()
+    {
+        currentState.HandleServerStarted();
+    }
+    private void HandleServerStopped(bool isHost)
+    {
+        Debug.Log($"Server stopped: isHost({isHost})");
+        currentState.HandleServerStopped(isHost);
     }
 
     public void StartServer()
     {
-        connectionMethod.SetupHostConnection();
-        bool success = networkManager.StartServer();
-        if (success)
-        {
-            Debug.Log("StartServer success");
-            CurrentConnectionState = EConnectionState.Online;
-        }
-        else
-        {
-            Debug.Log("StartServer failed");
-        }
+        currentState.StartServer();
     }
 
     public void StartHost()
     {
-        connectionMethod.SetupHostConnection();
-        bool success = networkManager.StartHost();
-        if(success)
-        {
-            connectionMethod.OnHostStartedSuccessfully();
-            CurrentConnectionState = EConnectionState.Online;
-        }
-        else
-        {
-            connectionMethod.OnHostStartFailed();
-        }
+        currentState.StartHost();
     }
 
     public void StartClient()
     {
-        connectionMethod.SetupClientConnection();
-        bool success = networkManager.StartClient();
-        if (success)
-        {
-            Debug.Log("StartClient success");
-            CurrentConnectionState = EConnectionState.Online;
-        }
-        else
-        {
-            Debug.Log("StartClient failed");
-        }
+        currentState.StartClient();
     }
 
     public void StartClientIP(string ipAddress, ushort port)
     {
-        if (connectionMethod is ConnectionMethodUnityTransport unityConnection)
+        if (ConnectionMethod is ConnectionMethodUnityTransport unityConnection)
         {
             unityConnection.SetIpAddress(ipAddress);
             unityConnection.SetPort(port);
-            StartClient();
+            currentState.StartClient();
         }
     }
 
     public void ShowSteamFriendOverlay()
     {
-        if (connectionMethod is ConnectionMethodSteam steamConnection)
+        if (ConnectionMethod is ConnectionMethodSteam steamConnection)
         {
             steamConnection.ShowSteamFriendOverlay();
         }
@@ -172,7 +206,7 @@ public class ConnectionManager : MonoBehaviour
 
     public void OpenFriendOverlayForGameInvite()
     {
-        if (connectionMethod is ConnectionMethodSteam steamConnection)
+        if (ConnectionMethod is ConnectionMethodSteam steamConnection)
         {
             steamConnection.OpenFriendOverlayForGameInvite();
         }
@@ -180,8 +214,11 @@ public class ConnectionManager : MonoBehaviour
 
     public void Disconnect()
     {
-        CurrentConnectionState = EConnectionState.Offline;
-        connectionMethod.SetupDisconnect();
-        networkManager.Shutdown();
+        currentState.Disconnect();
+    }
+
+    private void HandleTransportFailure()
+    {
+        currentState.Disconnect();
     }
 }

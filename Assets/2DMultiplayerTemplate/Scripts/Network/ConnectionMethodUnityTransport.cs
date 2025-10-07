@@ -35,12 +35,12 @@ public class ConnectionMethodUnityTransport : ConnectionMethod
         
     }
 
-    public override void OnHostStartedSuccessfully()
+    public override void HandleHostStartedSuccessfully()
     {
         Debug.Log($"Unity Transport Host Success");
     }
 
-    public override void OnHostStartFailed()
+    public override void HandleHostStartFailed()
     {
         Debug.Log($"Unity Transport Host Failed");
     }
