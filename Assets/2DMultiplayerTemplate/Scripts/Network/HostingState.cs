@@ -16,23 +16,17 @@ public class HostingState : ConnectionState
         networkManager.Shutdown();
     }
 
-    public override void Disconnect()
+    public override void OnUserRequestedShutdown()
     {
         connectionManager.ChangeState(EConnectionState.Offline);
     }
 
     public override void HandleClientConnected(ulong clientId)
     {
-        Debug.Log($"HandleClientConnected: clientId({clientId})");
         if (!networkManager.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
             return;
 
-        // bool hasAuthority = networkManager.IsServer || networkManager.IsHost;
-        // if (hasAuthority)
-        {
-            Debug.Log($"CreatePlayerCharacter: clientId({clientId})");
-            GameManager.Instance.HandleClientConnected(clientId);
-        }
+        GameManager.Instance.HandleClientConnected(clientId);
     }
 
     public override void HandleClientDisconnected(ulong clientId)
@@ -45,16 +39,36 @@ public class HostingState : ConnectionState
         var connectionData = request.Payload;
         var clientId = request.ClientNetworkId;
 
-        if (clientId == networkManager.LocalClientId)
+        var payload = System.Text.Encoding.UTF8.GetString(connectionData);
+        var connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payload);
+        var connectStatus = GetConnectStatus(connectionPayload);
+
+        if (connectStatus == EConnectStatus.Success)
         {
-            var payload = System.Text.Encoding.UTF8.GetString(connectionData);
-            var connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payload);
-            Debug.Log($"{connectionPayload}");
             response.Approved = true;
             response.CreatePlayerObject = true;
+            return;
         }
 
-        response.Approved = true;
-        response.CreatePlayerObject = true;
+        response.Approved = false;
+        response.CreatePlayerObject = false;
+        response.Reason = JsonUtility.ToJson(connectStatus);
+    }
+
+    private EConnectStatus GetConnectStatus(ConnectionPayload connectionPayload)
+    {
+        if (networkManager.ConnectedClientsIds.Count >= connectionManager.MaxConnectedPlayers)
+        {
+            return EConnectStatus.ServerFull;
+        }
+
+        if(connectionPayload.isDebug != Debug.isDebugBuild)
+        {
+            return EConnectStatus.IncompatibleBuildType;
+        }
+
+        // TODO: Handle LoggedInAgain
+        // return EConnectStatus.LoggedInAgain
+        return EConnectStatus.Success;
     }
 }

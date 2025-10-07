@@ -1,4 +1,5 @@
 using Netcode.Transports.Facepunch;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -14,7 +15,23 @@ public enum EConnectionState
     ClientConnecting,
     ClientConnected,
 
-    StartingServer,
+    StartingServer, // TODO: Not implemented yet
+    // RunningServer
+}
+
+public enum EConnectStatus
+{
+    Undefined,
+    Success,                  //client successfully connected. This may also be a successful reconnect.
+    ServerFull,               //can't join, server is already at capacity.
+    LoggedInAgain,            //logged in on a separate client, causing this one to be kicked out.
+    UserRequestedDisconnect,  //Intentional Disconnect triggered by the user.
+    GenericDisconnect,        //server disconnected, but no specific reason given.
+    Reconnecting,             //client lost connection and is attempting to reconnect.
+    IncompatibleBuildType,    //client build type is incompatible with server.
+    HostEndedSession,         //host intentionally ended the session.
+    StartHostFailed,          // server failed to bind
+    StartClientFailed         // failed to connect to server and/or invalid network endpoint
 }
 
 public class ConnectionManager : MonoBehaviour
@@ -23,14 +40,12 @@ public class ConnectionManager : MonoBehaviour
 
     public ConnectionMethod ConnectionMethod { get; private set; }
     public bool IsSteam => ConnectionMethod is ConnectionMethodSteam;
+    public Action<EConnectStatus> OnConnectStatus;
 
     public EConnectionState CurrentConnectionState;
-
-
-    [SerializeField] private int maxConnectedPlayers = 4;
+    public int MaxConnectedPlayers = 4;
 
     private NetworkManager networkManager;
-
     private ConnectionState currentState;
     private Dictionary<EConnectionState, ConnectionState> connectionStates = new Dictionary<EConnectionState, ConnectionState>();
     private OfflineState offlineState;
@@ -38,7 +53,6 @@ public class ConnectionManager : MonoBehaviour
     private HostingState hostingState;
     private ClientConnectingState clientConnectingState;
     private ClientConnectedState clientConnectedState;
-
 
     [Header("Unity Transport")]
     [SerializeField] private UnityTransport unityTransport;
@@ -74,6 +88,8 @@ public class ConnectionManager : MonoBehaviour
         networkManager = NetworkManager.Singleton;
         networkManager.LogLevel = Unity.Netcode.LogLevel.Developer;
 
+        OnConnectStatus += (status) => { Debug.Log(status); };
+
         offlineState = new OfflineState(this);
         startingHostState = new StartingHostState(this);
         hostingState = new HostingState(this);
@@ -91,11 +107,11 @@ public class ConnectionManager : MonoBehaviour
         currentState = offlineState;
 
 #if UNITY_EDITOR
-        ConnectionMethod = new ConnectionMethodUnityTransport(this, maxConnectedPlayers, ipAddress, port);
+        ConnectionMethod = new ConnectionMethodUnityTransport(this, MaxConnectedPlayers, ipAddress, port);
 #endif
 
 #if !UNITY_EDITOR
-        connectionMethod = new ConnectionMethodSteam(this, maxConnectedPlayers, facepunchTransport);
+        connectionMethod = new ConnectionMethodSteam(this, MaxConnectedPlayers, facepunchTransport);
 #endif
 
         Application.quitting += ConnectionMethod.HandleApplicationQuit;
@@ -115,6 +131,7 @@ public class ConnectionManager : MonoBehaviour
         networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;
         networkManager.OnServerStarted -= HandleServerStarted;
         networkManager.OnServerStopped -= HandleServerStopped;
+        networkManager.OnTransportFailure -= HandleTransportFailure;
     }
 
     private void OnApplicationQuit()
@@ -158,7 +175,6 @@ public class ConnectionManager : MonoBehaviour
 
     private void HandleClientDisconnected(ulong clientId)
     {
-        Debug.Log($"clientId({clientId}) disconnected");
         currentState.HandleClientDisconnected(clientId);
     }
     private void HandleServerStarted()
@@ -167,7 +183,6 @@ public class ConnectionManager : MonoBehaviour
     }
     private void HandleServerStopped(bool isHost)
     {
-        Debug.Log($"Server stopped: isHost({isHost})");
         currentState.HandleServerStopped(isHost);
     }
 
@@ -214,11 +229,11 @@ public class ConnectionManager : MonoBehaviour
 
     public void Disconnect()
     {
-        currentState.Disconnect();
+        currentState.OnUserRequestedShutdown();
     }
 
     private void HandleTransportFailure()
     {
-        currentState.Disconnect();
+        currentState.OnTransportFailure();
     }
 }

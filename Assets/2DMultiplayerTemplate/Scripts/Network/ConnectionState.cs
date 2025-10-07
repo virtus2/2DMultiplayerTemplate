@@ -17,7 +17,6 @@ public abstract class ConnectionState
     public virtual void StartServer() { }
     public virtual void StartHost() { }
     public virtual void StartClient() { }
-    public virtual void Disconnect() { }
 
     public virtual void OnClientConnected(ulong clientId) { }
     public virtual void OnClientDisconnect(ulong clientId) { }
@@ -28,6 +27,6 @@ public abstract class ConnectionState
     public virtual void HandleClientConnected(ulong clientId) { }
     public virtual void HandleClientDisconnected(ulong clientId) { }
 
-
+    public virtual void OnUserRequestedShutdown() { }
     public virtual void OnTransportFailure() { }
 }

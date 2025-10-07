@@ -14,7 +14,7 @@ public class StartingHostState : ConnectionState
     {
     }
 
-    public override void Disconnect()
+    public override void OnUserRequestedShutdown()
     {
         connectionManager.ChangeState(EConnectionState.Offline);
     }

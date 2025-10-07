@@ -148,7 +148,7 @@ public class GameManager : MonoBehaviour
                     }
                     break;
                 default:
-
+                    ChangeMainMenu(EMainMenuState.Main);
                     break;
             }
         }

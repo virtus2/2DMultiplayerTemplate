@@ -12,10 +12,13 @@ public class ClientConnectedState : ConnectionState
 
     public override void Exit()
     {
+        connectionManager.ConnectionMethod.SetupDisconnect();
+        networkManager.Shutdown();
     }
 
-    public override void Disconnect()
+    public override void OnUserRequestedShutdown()
     {
+        connectionManager.OnConnectStatus?.Invoke(EConnectStatus.GenericDisconnect);
         connectionManager.ChangeState(EConnectionState.Offline);
     }
 
@@ -23,7 +26,7 @@ public class ClientConnectedState : ConnectionState
     {
         string disconnectReason = networkManager.DisconnectReason;
 
-        Debug.Log(disconnectReason);
+        Debug.Log($"{clientId} disconnected. reason:{disconnectReason}");
 
         connectionManager.ChangeState(EConnectionState.Offline);
     }

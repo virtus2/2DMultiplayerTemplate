@@ -15,8 +15,9 @@ public class ClientConnectingState : ConnectionState
     {
     }
 
-    public override void Disconnect()
+    public override void OnUserRequestedShutdown()
     {
+        connectionManager.OnConnectStatus?.Invoke(EConnectStatus.GenericDisconnect);
         connectionManager.ChangeState(EConnectionState.Offline);
     }
 
