@@ -10,7 +10,6 @@ public class Player : NetworkBehaviour
     [SerializeField] private PlayerInput playerInput;
     [SerializeField] private PlayerCharacter playerCharacter;
     private PlayerCamera playerCamera;
-    
 
     public void OnMove(CallbackContext context)
     {
@@ -28,6 +27,7 @@ public class Player : NetworkBehaviour
         Vector2 mouseScreenPosition = Mouse.current.position.ReadValue();
         float distanceFromCamera = 10f;
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, distanceFromCamera));
+
         if (playerCharacter)
         {
             playerCharacter.HandleMousePosition(worldPosition);
@@ -44,6 +44,16 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void OnInteract(CallbackContext context)
+    {
+        bool interactInput = context.ReadValueAsButton();
+
+        if (playerCharacter)
+        {
+            playerCharacter.HandleInteractInput(interactInput);
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -55,6 +65,9 @@ public class Player : NetworkBehaviour
     public void SetPlayerCharacter(PlayerCharacter character)
     {
         playerCharacter = character;
-        playerCamera.SetFollowTarget(character.gameObject);
+        if (IsOwner)
+        {
+            playerCamera.SetFollowTarget(character.gameObject);
+        }
     }
 }

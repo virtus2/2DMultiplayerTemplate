@@ -1,10 +1,13 @@
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerCharacter : Character
 {
     [Header("Player Character")]
     [SerializeField] private CharacterControlInput clientInput;
+
+    [SerializeField] private InteractionHandler interactionHandler;
 
     private Player ownerPlayer;
     
@@ -21,11 +24,11 @@ public class PlayerCharacter : Character
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(OwnerClientId, out NetworkClient client))
             return;
 
-        if (OwnerClientId != NetworkManager.LocalClientId)
-            return;
-
+        bool isOwner = OwnerClientId == NetworkManager.LocalClientId;
         ownerPlayer = client.PlayerObject.GetComponent<Player>();
         ownerPlayer.SetPlayerCharacter(this);
+
+        interactionHandler.enabled = isOwner;
     }
 
     protected override void InitializeStateMachine()
@@ -66,10 +69,20 @@ public class PlayerCharacter : Character
         Vector3 lookVector = worldPosition - transform.position;
         lookVector.Normalize();
         clientInput.Look = new Vector2(lookVector.x, lookVector.y);
+
+        if (interactionHandler.enabled)
+        {
+            interactionHandler.HandleMousePosition(worldPosition);
+        }
     }
 
     public void HandleAttackInput(bool attackInput)
     {
         clientInput.Attack = attackInput;
+    }
+
+    public void HandleInteractInput(bool interactInput)
+    {
+
     }
 }

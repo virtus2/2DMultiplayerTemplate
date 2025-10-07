@@ -190,7 +190,8 @@ GameObject:
   - component: {fileID: 123008652995376605}
   - component: {fileID: -5881390288688126875}
   - component: {fileID: 7516833608468272135}
-  - component: {fileID: 6556425961394171426}
+  - component: {fileID: 7559314112169231877}
+  - component: {fileID: 7900364028098189663}
   - component: {fileID: 14871164405706576}
   - component: {fileID: 3459336260924187184}
   m_Layer: 6
@@ -422,12 +423,12 @@ MonoBehaviour:
     Move: {x: 0, y: 0}
     Look: {x: 0, y: 0}
     Attack: 0
-  MoveSpeed: 1
+  MoveSpeed: 3
   IsAttacking: 0
   rb: {fileID: 7626085548226502691}
   animator: {fileID: 629533877819066296}
   stateMachine: {fileID: 7516833608468272135}
-  damageReceiver: {fileID: 6556425961394171426}
+  damageReceiver: {fileID: 0}
   meleeAttackCollider: {fileID: 694200953656775715}
   movementVector: {x: 0, y: 0}
   lookVector: {x: 0, y: 0}
@@ -435,6 +436,7 @@ MonoBehaviour:
     Move: {x: 0, y: 0}
     Look: {x: 0, y: 0}
     Attack: 0
+  interactionHandler: {fileID: 7559314112169231877}
 --- !u!114 &7516833608468272135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,7 +452,19 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   currentState:
     m_InternalValue: 0
---- !u!114 &6556425961394171426
+--- !u!114 &7559314112169231877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3162571151937909349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a71c3b29d1728b41bb2c57eb8cc00c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionHandler
+--- !u!114 &7900364028098189663
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -462,6 +476,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1876a7a75a49c184887b0aea19bd1319, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageReceiver
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &14871164405706576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -475,7 +490,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SquashAndStretch
   targetTransform: {fileID: 3142069954287224380}
-  damageReceiver: {fileID: 6556425961394171426}
+  damageReceiver: {fileID: 7900364028098189663}
   duration: 1
   squashX: 0.5
   squashY: 1.2
@@ -515,7 +530,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b1817967d549a4789bc4c4f12f451f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dungeon.BlinkImpact
-  damageReceiver: {fileID: 6556425961394171426}
+  damageReceiver: {fileID: 7900364028098189663}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.25
   amountAnimationCurve:

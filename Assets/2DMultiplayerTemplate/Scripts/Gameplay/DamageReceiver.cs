@@ -2,7 +2,7 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 
-public class DamageReceiver : MonoBehaviour, IDamageable
+public class DamageReceiver : NetworkBehaviour, IDamageable
 {
     public Action OnDamageTaken;
     public Action OnDied;
@@ -22,7 +22,15 @@ public class DamageReceiver : MonoBehaviour, IDamageable
         if (collision.CompareTag("AttackTrigger"))
         {
             var attacker = collision.GetComponentInParent<Character>();
-            TakeDamage(attacker, 1f);
+            TakeDamageRpc(attacker.OwnerClientId, 1f);
         }
     }
+
+    [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Unreliable)]
+    private void TakeDamageRpc(ulong ownerClientId, float damage)
+    {
+        Debug.Log("TakeDamageRpc");
+        OnDamageTaken?.Invoke();
+    }
+    
 }
