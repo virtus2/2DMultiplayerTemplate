@@ -102,10 +102,9 @@ GameObject:
   - component: {fileID: 5133271414809204704}
   - component: {fileID: 5571356947284272932}
   - component: {fileID: 2342982078281909166}
-  - component: {fileID: 7564359103932922564}
-  - component: {fileID: 8989490453605508257}
-  - component: {fileID: 6245692008491538433}
   - component: {fileID: 7541813938527885997}
+  - component: {fileID: 6245692008491538433}
+  - component: {fileID: 8989490453605508257}
   m_Layer: 7
   m_Name: Rock
   m_TagString: Player
@@ -187,7 +186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 610671130
+  GlobalObjectIdHash: 3470407900
   InScenePlacedSourceGlobalObjectIdHash: 3470407900
   DeferredDespawnTick: 0
   Ownership: 1
@@ -222,7 +221,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7564359103932922564
+--- !u!114 &7541813938527885997
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -231,51 +230,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 5361329296580794255}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1876a7a75a49c184887b0aea19bd1319, type: 3}
+  m_Script: {fileID: 11500000, guid: 2fa8733290714c04983e98ef3858d842, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DamageReceiver
+  m_EditorClassIdentifier: Assembly-CSharp::Building
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &8989490453605508257
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5361329296580794255}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df53585f81202b24d947a95866fe330e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SquashAndStretch
-  targetTransform: {fileID: 2047853050722078371}
-  damageReceiver: {fileID: 7564359103932922564}
-  duration: 1
-  squashX: 0.5
-  squashY: 1.2
-  recoveryAnimationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  OnTakeDamage:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6245692008491538433}
+        m_TargetAssemblyTypeName: Dungeon.BlinkImpact, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 8989490453605508257}
+        m_TargetAssemblyTypeName: SquashAndStretch, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6245692008491538433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,7 +273,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b1817967d549a4789bc4c4f12f451f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dungeon.BlinkImpact
-  damageReceiver: {fileID: 7564359103932922564}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.25
   amountAnimationCurve:
@@ -317,7 +301,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   impactAmountParameterName: _ImpactAmount
   impactColorParameterName: _ImpactColor
---- !u!114 &7541813938527885997
+--- !u!114 &8989490453605508257
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -326,7 +310,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 5361329296580794255}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fa8733290714c04983e98ef3858d842, type: 3}
+  m_Script: {fileID: 11500000, guid: df53585f81202b24d947a95866fe330e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Building
-  ShowTopMostFoldoutHeaderGroup: 1
+  m_EditorClassIdentifier: Assembly-CSharp::SquashAndStretch
+  targetTransform: {fileID: 2047853050722078371}
+  duration: 1
+  squashX: 0.5
+  squashY: 1.2
+  recoveryAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

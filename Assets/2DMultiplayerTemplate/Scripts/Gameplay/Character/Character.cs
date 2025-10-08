@@ -1,6 +1,7 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 [System.Serializable]
 public struct CharacterControlInput : INetworkSerializable
@@ -17,7 +18,7 @@ public struct CharacterControlInput : INetworkSerializable
     }
 }
 
-public abstract class Character : NetworkBehaviour
+public abstract class Character : NetworkBehaviour, IDamageable, IAttacker
 {
     public CharacterControlInput Input;
     public float MoveSpeed = 1f;
@@ -27,12 +28,17 @@ public abstract class Character : NetworkBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator animator;
     [SerializeField] protected StateMachine stateMachine;
-    [SerializeField] protected DamageReceiver damageReceiver;
     [SerializeField] protected Collider2D meleeAttackCollider;
 
-    [Header("Gameplay")]
+    [Header("Gameplay values")]
     [SerializeField] private Vector2 movementVector;
     [SerializeField] private Vector2 lookVector;
+    [SerializeField] private float maxHealthPoint;
+    [SerializeField] private float curHealthPoint;
+    [SerializeField] private float damage;
+
+    [Header("Gameplay events")]
+    public UnityEvent OnTakeDamage;
 
     static Lazy<int> Animator_Parameter_Hash_Velocity;
     static Lazy<int> Animator_Parameter_Hash_Right;
@@ -45,6 +51,7 @@ public abstract class Character : NetworkBehaviour
     {
         InitializeAnimatorParameterHash();
         InitializeStateMachine();
+        InitializeStatus();
     }
 
     private void InitializeAnimatorParameterHash()
@@ -52,6 +59,12 @@ public abstract class Character : NetworkBehaviour
         if (Animator_Parameter_Hash_Velocity == null) Animator_Parameter_Hash_Velocity = new Lazy<int>(Animator.StringToHash("Velocity"));
         if (Animator_Parameter_Hash_Right == null) Animator_Parameter_Hash_Right = new Lazy<int>(Animator.StringToHash("Right"));
         if (Animator_Parameter_Hash_IsAttacking == null) Animator_Parameter_Hash_IsAttacking = new Lazy<int>(Animator.StringToHash("IsAttacking"));
+    }
+    
+    private void InitializeStatus()
+    {
+        // health point
+        curHealthPoint = maxHealthPoint;
     }
 
     public override void OnNetworkSpawn()
@@ -94,5 +107,25 @@ public abstract class Character : NetworkBehaviour
     {
         meleeAttackCollider.gameObject.SetActive(active);
     }
+
+
+    #region IDamageable
+    public void TakeDamage(in DamageInfo damageInfo)
+    {
+        OnTakeDamage?.Invoke();
+    }
+    #endregion
+
+    #region IAttacker
+    public DamageInfo GetDamageInfo(IDamageable target)
+    {
+        var damageInfo = new DamageInfo()
+        {
+            damageAmount = damage,
+            attacker = this
+        };
+        return damageInfo;
+    }
+    #endregion
 }
 

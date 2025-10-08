@@ -5,7 +5,6 @@ public class SquashAndStretch : MonoBehaviour
 {
     [Header("Component References")]
     [SerializeField] private Transform targetTransform;
-    [SerializeField] private DamageReceiver damageReceiver;
 
     [Header("Variables")]
     [SerializeField] private float duration;
@@ -21,16 +20,6 @@ public class SquashAndStretch : MonoBehaviour
     private void Awake()
     {
         originalSize = targetTransform.localScale;
-    }
-
-    private void OnEnable()
-    {
-        damageReceiver.OnDamageTaken += Play;
-    }
-
-    private void OnDisable()
-    {
-        damageReceiver.OnDamageTaken -= Play;
     }
 
     private void Update()

@@ -6,9 +6,6 @@ namespace Dungeon
 {
     public class BlinkImpact : MonoBehaviour
     {
-        [Header("Component References")]
-        [SerializeField] private DamageReceiver damageReceiver;
-
         [Header("Variables")]
         [ColorUsage(showAlpha: true, hdr: true)]
         [SerializeField] private Color color = Color.white;
@@ -55,17 +52,6 @@ namespace Dungeon
                 }
             }
         }
-
-        private void OnEnable()
-        {
-            damageReceiver.OnDamageTaken += Play;
-        }
-
-        private void OnDisable()
-        {
-            damageReceiver.OnDamageTaken -= Play;
-        }
-
         private void Update()
         {
             if (isPlaying)

@@ -4,7 +4,6 @@ using UnityEngine;
 public class Shake : MonoBehaviour
 {
     [Header("Component References")]
-    [SerializeField] private DamageReceiver damageReceiver;
     [SerializeField] private Transform targetTransform;
 
     [Header("Variables")]

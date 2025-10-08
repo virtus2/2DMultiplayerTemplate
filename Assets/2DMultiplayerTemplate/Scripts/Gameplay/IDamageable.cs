@@ -1,5 +1,7 @@
+using Dungeon;
+using UnityEngine;
+
 public interface IDamageable
 {
-    public void TakeDamage(Character damageGiver, float damage);
-    public bool IsDamageable();
+    public void TakeDamage(in DamageInfo damageInfo);
 }
