@@ -102,7 +102,6 @@ GameObject:
   - component: {fileID: 5133271414809204704}
   - component: {fileID: 5571356947284272932}
   - component: {fileID: 2342982078281909166}
-  - component: {fileID: 2122263060344782351}
   - component: {fileID: 7564359103932922564}
   - component: {fileID: 8989490453605508257}
   - component: {fileID: 6245692008491538433}
@@ -223,21 +222,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2122263060344782351
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5361329296580794255}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
-  ShowTopMostFoldoutHeaderGroup: 1
-  TransitionStateInfoList: []
-  m_Animator: {fileID: 2342982078281909166}
 --- !u!114 &7564359103932922564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -345,3 +329,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fa8733290714c04983e98ef3858d842, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Building
+  ShowTopMostFoldoutHeaderGroup: 1
