@@ -409,27 +409,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98d9db9626104da59357651088226725, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Multiplayer.Tools.NetworkSimulator.Runtime::Unity.Multiplayer.Tools.NetworkSimulator.Runtime.NetworkSimulator
-  m_PresetAsset: {fileID: 0}
+  m_PresetAsset: {fileID: 11400000, guid: e0e81f300d9d2a24b82bcf244292d77c, type: 2}
   m_PresetReference:
-    rid: 6739370817106739315
+    rid: -2
   m_Scenario:
     rid: -2
-  m_IsScenarioSettingsFolded: 0
+  m_IsScenarioSettingsFolded: 1
   AutoRunScenario: 0
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 6739370817106739315
-      type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime, asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
-      data:
-        <Name>k__BackingField: 
-        <Description>k__BackingField: 
-        <PacketDelayMs>k__BackingField: 0
-        <PacketJitterMs>k__BackingField: 0
-        <PacketLossInterval>k__BackingField: 0
-        <PacketLossPercent>k__BackingField: 0
 --- !u!4 &951923202
 Transform:
   m_ObjectHideFlags: 0
@@ -856,8 +847,8 @@ Camera:
   m_GameObject: {fileID: 1834069138}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.05882353, g: 0.05882353, b: 0.05882353, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1306,7 +1297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65656252809eec840afba8d3a6c6a519, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  playerCharacterPrefab: {fileID: 2960817192275098128, guid: d2408b49b24d3a94a98a6ef4235230ea, type: 3}
+  playerCharacterPrefab: {fileID: 2960817192275098128, guid: 09f93ce16b883744fa4ed36bf2a96757, type: 3}
   aiCharacterPrefab: {fileID: 2960817192275098128, guid: bead2b48848cbde41af82b1329906aaf, type: 3}
   prevMainMenuState: 0
   currMainMenuState: 0
