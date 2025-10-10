@@ -11,6 +11,13 @@ public class AICharacter : Character
     private float elapsedTime = 0f;
     private Vector2 targetPosition = Vector2.zero;
 
+    protected override void Awake()
+    {
+        base.Awake();
+
+        attackType = EAttackType.Area;
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

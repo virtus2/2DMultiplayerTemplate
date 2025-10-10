@@ -8,13 +8,13 @@ public class Player : NetworkBehaviour
     public Vector2 MoveInput = default(Vector2);
 
     [SerializeField] private PlayerInput playerInput;
-    [SerializeField] private PlayerCharacter playerCharacter;
+    [SerializeField] private IPlayerCharacter playerCharacter;
     private PlayerCamera playerCamera;
 
     public void OnMove(CallbackContext context)
     {
         Vector2 moveInput = context.ReadValue<Vector2>();
-        if (playerCharacter)
+        if (playerCharacter != null)
         {
             playerCharacter.HandleMoveInput(moveInput);
         }
@@ -28,7 +28,7 @@ public class Player : NetworkBehaviour
         float distanceFromCamera = 10f;
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, distanceFromCamera));
 
-        if (playerCharacter)
+        if (playerCharacter != null)
         {
             playerCharacter.HandleMousePosition(worldPosition);
         }
@@ -38,7 +38,7 @@ public class Player : NetworkBehaviour
     {
         bool attackInput = context.ReadValueAsButton();
 
-        if (playerCharacter)
+        if (playerCharacter != null)
         {
             playerCharacter.HandleAttackInput(attackInput);
         }
@@ -48,7 +48,7 @@ public class Player : NetworkBehaviour
     {
         bool interactInput = context.ReadValueAsButton();
 
-        if (playerCharacter)
+        if (playerCharacter != null)
         {
             playerCharacter.HandleInteractInput(interactInput);
         }
@@ -62,12 +62,12 @@ public class Player : NetworkBehaviour
         playerCamera = FindAnyObjectByType<PlayerCamera>();
     }
 
-    public void SetPlayerCharacter(PlayerCharacter character)
+    public void SetPlayerCharacter(IPlayerCharacter character)
     {
         playerCharacter = character;
         if (IsOwner)
         {
-            playerCamera.SetFollowTarget(character.gameObject);
+            playerCamera.SetFollowTarget(character.GameObject);
         }
     }
 }

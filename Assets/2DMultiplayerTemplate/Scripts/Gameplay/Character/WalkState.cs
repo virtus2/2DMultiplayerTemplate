@@ -19,13 +19,21 @@ public class WalkState : IState
     {
     }
 
-    public void OnUpdate(ref Vector2 movementVector)
+    public void OnServerUpdate()
     {
         float x = character.Input.Move.x * character.MoveSpeed * Time.fixedDeltaTime;
         float y = character.Input.Move.y * character.MoveSpeed * Time.fixedDeltaTime;
-        movementVector = new Vector2(x, y);
+        character.MovementVector = new Vector2(x, y);
+    }
 
-        if(movementVector == Vector2.zero)
+    public void OnClientUpdate()
+    {
+
+    }
+
+    public void CheckTransitions()
+    {
+        if(character.MovementVector == Vector2.zero)
         {
             stateMachine.TransitionTo(ECharacterState.Idle);
             return;

@@ -2,12 +2,10 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.TextCore.Text;
 
-// TODO: Client prediction & reconciliation
-// https://github.com/adammyhre/Unity-Multiplayer-Kart/blob/master/Assets/_Project/Scripts/KartController.cs#L22
-// TODO: Test bandwidth
 [System.Serializable]
-public struct CharacterControlInput : INetworkSerializable
+public struct InputPayload : INetworkSerializable
 {
     public Vector2 Move;
     public Vector2 Look;
@@ -21,23 +19,16 @@ public struct CharacterControlInput : INetworkSerializable
     }
 }
 
-public enum EAttackType
-{
-    Position,
-    Area,
-}
-
-public abstract class Character : NetworkBehaviour, IDamageable, IAttacker
+public abstract class CharacterV2 : NetworkBehaviour, IDamageable, IAttacker
 {
     public CharacterControlInput Input;
-    public float MoveSpeed = 1f;
+    public float MoveSpeed = 3f;
     public Vector2 MovementVector;
     public bool IsAttacking = false;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator animator;
-    [SerializeField] protected StateMachine stateMachine;
     [SerializeField] protected Collider2D meleeAttackCollider;
 
     [Header("Gameplay values")]
@@ -56,13 +47,11 @@ public abstract class Character : NetworkBehaviour, IDamageable, IAttacker
     static Lazy<int> Animator_Parameter_Hash_Right;
     static Lazy<int> Animator_Parameter_Hash_IsAttacking;
 
-    protected abstract void InitializeStateMachine();
     protected abstract void HandleInput();
 
     protected virtual void Awake()
     {
         InitializeAnimatorParameterHash();
-        InitializeStateMachine();
         InitializeStatus();
     }
 
@@ -82,24 +71,20 @@ public abstract class Character : NetworkBehaviour, IDamageable, IAttacker
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
-        if (HasAuthority)
-        {
-            stateMachine.TransitionTo(ECharacterState.Idle);
-        }
     }
 
     private void Update()
     {
         HandleInput();
-        UpdateState();
+        UpdateVelocity();
         UpdateAnimationParameters();
     }
 
-    private void UpdateState()
+    private void UpdateVelocity()
     {
-        stateMachine.UpdateState();
-        lookVector = Input.Look;
+        float x = Input.Move.x * MoveSpeed * Time.deltaTime;
+        float y = Input.Move.y * MoveSpeed * Time.deltaTime;
+        MovementVector = new Vector2(x, y);
     }
 
     private void UpdateAnimationParameters()
@@ -113,49 +98,6 @@ public abstract class Character : NetworkBehaviour, IDamageable, IAttacker
     {
         Vector2 targetPosition = rb.position + MovementVector;
         rb.MovePosition(targetPosition);
-    }
-
-    public void SetActiveAttackCollider(bool active)
-    {
-        meleeAttackCollider.gameObject.SetActive(active);
-    }
-
-    public void AttackLookPosition()
-    {
-        Debug.Log($"AttackLookPosition: {lookPositionWorld}");
-        if (HasAuthority)
-        {
-            AttackLookPositionInternal(lookPositionWorld);
-        }
-        else
-        {
-            RequestAttackLookPositionRpc(lookPositionWorld);
-        }
-    }
-
-    [Rpc(SendTo.Authority)]
-    private void RequestAttackLookPositionRpc(Vector3 position)
-    {
-        AttackLookPositionInternal(position);
-    }
-
-    private void AttackLookPositionInternal(Vector3 position)
-    {
-        Debug.Log("AttackLookPositionInternal");
-        // TODO: check distance
-        RaycastHit2D hit = Physics2D.Raycast(position, Vector2.zero);
-        IDamageable target;
-        if (hit.collider != null)
-        {
-            Debug.Log("hit.collider != null");
-            target = hit.collider.GetComponent<IDamageable>();
-            if (target != null)
-            {
-                Debug.Log("target != null");
-                DamageInfo damageInfo = GetDamageInfo(target);
-                target.TakeDamage(damageInfo);
-            }
-        }
     }
 
     #region IDamageable

@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerCharacter : Character, IPlayerCharacter
+public class PlayerCharacterV2 : CharacterV2, IPlayerCharacter
 {
     public GameObject GameObject => gameObject;
 
@@ -11,8 +11,8 @@ public class PlayerCharacter : Character, IPlayerCharacter
 
     [SerializeField] private InteractionHandler interactionHandler;
 
-
     private Player ownerPlayer;
+
     protected override void Awake()
     {
         base.Awake();   
@@ -24,7 +24,7 @@ public class PlayerCharacter : Character, IPlayerCharacter
     {
         base.OnNetworkSpawn();
 
-        name = $"{nameof(PlayerCharacter)} - {OwnerClientId}";
+        name = $"{nameof(PlayerCharacterV2)} - {OwnerClientId}";
         SetOwnerPlayer();
     }
 
@@ -38,14 +38,6 @@ public class PlayerCharacter : Character, IPlayerCharacter
         ownerPlayer.SetPlayerCharacter(this);
 
         interactionHandler.enabled = isOwner;
-    }
-
-    protected override void InitializeStateMachine()
-    {
-        stateMachine.AddState(ECharacterState.Idle, new IdleState(this, stateMachine));
-        stateMachine.AddState(ECharacterState.Walk, new WalkState(this, stateMachine));
-        stateMachine.AddState(ECharacterState.Attack, new AttackState(this, stateMachine));
-        stateMachine.AddState(ECharacterState.AttackPosition, new AttackPositionState(this, stateMachine));
     }
 
     protected override void HandleInput()
@@ -114,7 +106,7 @@ public class PlayerCharacter : Character, IPlayerCharacter
     {
         if (HasAuthority)
         {
-            stateMachine.TransitionTo(ECharacterState.AttackPosition);
+            //stateMachine.TransitionTo(ECharacterState.AttackPosition);
         }
         else
         {
@@ -127,7 +119,7 @@ public class PlayerCharacter : Character, IPlayerCharacter
     {
         // var damageInfo = attacker.GetDamageInfo(damageable);
         // damageable.TakeDamage(damageInfo);
-        stateMachine.TransitionTo(ECharacterState.AttackPosition);
+        // stateMachine.TransitionTo(ECharacterState.AttackPosition);
     }
 
     /// <summary>

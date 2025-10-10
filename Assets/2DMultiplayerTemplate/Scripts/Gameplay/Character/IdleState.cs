@@ -19,7 +19,15 @@ public class IdleState : IState
     {
     }
 
-    public void OnUpdate(ref Vector2 movementVector)
+    public void OnServerUpdate()
+    {
+    }
+
+    public void OnClientUpdate()
+    {
+    }
+
+    public void CheckTransitions()
     {
         if (character.Input.Move != Vector2.zero)
         {

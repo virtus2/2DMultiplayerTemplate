@@ -1,13 +1,13 @@
 using UnityEngine;
 
-public class AttackState : IState
+public class AttackPositionState : IState
 {
     private Character character;
     private StateMachine stateMachine;
     private float elapsedTime = 0f;
-    private float duration = 1f;
+    private float duration = 0.25f;
 
-    public AttackState(Character character, StateMachine stateMachine)
+    public AttackPositionState(Character character, StateMachine stateMachine)
     {
         this.character = character;
         this.stateMachine = stateMachine;
@@ -17,14 +17,14 @@ public class AttackState : IState
     {
         elapsedTime = 0f;
         character.IsAttacking = true;
-        character.SetActiveAttackCollider(true);
+        if (character.IsOwner)
+            character.AttackLookPosition();
     }
 
     public void OnExit()
     {
         elapsedTime = duration;
         character.IsAttacking = false;
-        character.SetActiveAttackCollider(false);
     }
 
     public void OnServerUpdate()
@@ -32,29 +32,23 @@ public class AttackState : IState
         float x = character.Input.Move.x * character.MoveSpeed * Time.fixedDeltaTime;
         float y = character.Input.Move.y * character.MoveSpeed * Time.fixedDeltaTime;
         character.MovementVector = new Vector2(x, y);
-
-        elapsedTime += Time.deltaTime;
     }
 
     public void OnClientUpdate()
     {
-        elapsedTime += Time.deltaTime;
     }
 
     public void CheckTransitions()
     {
-        if (elapsedTime >= duration)
+        if (character.MovementVector == Vector2.zero)
         {
-            if (character.MovementVector == Vector2.zero)
-            {
-                stateMachine.TransitionTo(ECharacterState.Idle);
-                return;
-            }
-            else
-            {
-                stateMachine.TransitionTo(ECharacterState.Walk);
-                return;
-            }
+            stateMachine.TransitionTo(ECharacterState.Idle);
+            return;
+        }
+        else
+        {
+            stateMachine.TransitionTo(ECharacterState.Walk);
+            return;
         }
     }
 }
