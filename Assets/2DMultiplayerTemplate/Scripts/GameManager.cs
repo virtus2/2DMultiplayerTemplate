@@ -171,7 +171,8 @@ public class GameManager : MonoBehaviour
 
     public void HandleClientConnected(ulong clientId)
     {
-        CreatePlayerCharacter(clientId, Vector3.zero, Quaternion.identity);
+        Vector3 spawnPosition = Random.insideUnitCircle * 3f;
+        CreatePlayerCharacter(clientId, spawnPosition, Quaternion.identity);
     }
 
     private void CreatePlayerCharacter(ulong clientId, in Vector3 position, in Quaternion rotation)

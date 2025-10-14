@@ -111,7 +111,7 @@ public class ConnectionManager : MonoBehaviour
 #endif
 
 #if !UNITY_EDITOR
-        connectionMethod = new ConnectionMethodSteam(this, MaxConnectedPlayers, facepunchTransport);
+        ConnectionMethod = new ConnectionMethodSteam(this, MaxConnectedPlayers, facepunchTransport);
 #endif
 
         Application.quitting += ConnectionMethod.HandleApplicationQuit;

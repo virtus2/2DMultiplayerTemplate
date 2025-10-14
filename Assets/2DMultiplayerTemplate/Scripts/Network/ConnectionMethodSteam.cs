@@ -1,7 +1,6 @@
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
-using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,6 +14,8 @@ public class ConnectionMethodSteam : ConnectionMethod
     private FacepunchTransport facepunchTransport;
     private Lobby? currentLobby;
 
+    private const string kRichPresense_SteamDisplay = "steam_display";
+
     public ConnectionMethodSteam(ConnectionManager connectionManager, int maxConnectedPlayers, FacepunchTransport transport)
         : base(connectionManager, maxConnectedPlayers)
     {
@@ -26,6 +27,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
         connectedToSteam = true;
         Debug.Log($"Steamworks initialized: playerSteamId({playerSteamId}), playerSteamName({playerSteamName})");
+        // SteamFriends.SetRichPresence("steam_display", "In MainMenu");
 
         SteamMatchmaking.OnLobbyCreated += HandleLobbyCreated;
         SteamMatchmaking.OnLobbyEntered += HandleLobbyEntered;
@@ -51,6 +53,7 @@ public class ConnectionMethodSteam : ConnectionMethod
     public override void HandleApplicationQuit()
     {
         LeaveLobby();
+        networkManager.Shutdown();
         DisableSteamworks();
     }
 
@@ -70,7 +73,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     public override void SetupDisconnect()
     {
-        currentLobby?.Leave();
+        LeaveLobby();
     }
 
     public override Task<(bool success, bool shouldTryAgain)> SetupClientReconnectionAsync()
@@ -119,6 +122,7 @@ public class ConnectionMethodSteam : ConnectionMethod
         currentLobby.Value.SetJoinable(true);
 
         SteamFriends.SetRichPresence("connect", "test");
+        // SteamFriends.SetRichPresence("steam_display", "In Lobby");
 
         Debug.Log($"Lobby Created! lobbyId({lobby.Id})");
     }
@@ -177,10 +181,11 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     private void LeaveLobby()
     {
+        if (currentLobby.HasValue)
+        {
+            Debug.Log($"Leave Lobby ({currentLobby.Value.Id})");
+        }
         currentLobby?.Leave();
-
-        networkManager.Shutdown();
-        currentLobby = null;
     }
 
     public void ShowSteamFriendOverlay()

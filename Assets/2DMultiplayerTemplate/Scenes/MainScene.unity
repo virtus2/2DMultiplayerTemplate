@@ -409,9 +409,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98d9db9626104da59357651088226725, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Multiplayer.Tools.NetworkSimulator.Runtime::Unity.Multiplayer.Tools.NetworkSimulator.Runtime.NetworkSimulator
-  m_PresetAsset: {fileID: 11400000, guid: e0e81f300d9d2a24b82bcf244292d77c, type: 2}
+  m_PresetAsset: {fileID: 0}
   m_PresetReference:
-    rid: -2
+    rid: 6739371090263408806
   m_Scenario:
     rid: -2
   m_IsScenarioSettingsFolded: 1
@@ -421,6 +421,15 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 6739371090263408806
+      type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime, asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
+      data:
+        <Name>k__BackingField: None
+        <Description>k__BackingField: 
+        <PacketDelayMs>k__BackingField: 0
+        <PacketJitterMs>k__BackingField: 0
+        <PacketLossInterval>k__BackingField: 0
+        <PacketLossPercent>k__BackingField: 0
 --- !u!4 &951923202
 Transform:
   m_ObjectHideFlags: 0
@@ -1297,7 +1306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65656252809eec840afba8d3a6c6a519, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  playerCharacterPrefab: {fileID: 2960817192275098128, guid: 09f93ce16b883744fa4ed36bf2a96757, type: 3}
+  playerCharacterPrefab: {fileID: 2960817192275098128, guid: f859c7174eaf6504d90ad8088734d38e, type: 3}
   aiCharacterPrefab: {fileID: 2960817192275098128, guid: bead2b48848cbde41af82b1329906aaf, type: 3}
   prevMainMenuState: 0
   currMainMenuState: 0

@@ -11,6 +11,16 @@ public class Player : NetworkBehaviour
     [SerializeField] private IPlayerCharacter playerCharacter;
     private PlayerCamera playerCamera;
 
+    private void Awake()
+    {
+        playerInput.enabled = false;
+    }
+
+    protected override void OnNetworkPostSpawn()
+    {
+        playerInput.enabled = IsOwner;
+    }
+
     public void OnMove(CallbackContext context)
     {
         Vector2 moveInput = context.ReadValue<Vector2>();
