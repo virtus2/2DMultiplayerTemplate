@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 6245692008491538433}
   - component: {fileID: 8989490453605508257}
   m_Layer: 7
-  m_Name: Rock
+  m_Name: DamageableObject
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

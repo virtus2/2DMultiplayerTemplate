@@ -5,16 +5,23 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 {
     [Header("ReadOnly Variables")]
     [SerializeField] private CharacterControlInput input;
+    [SerializeField] private Vector3 cursorPosition;
     [SerializeField] private Vector2 movementVector;
+    [SerializeField] private Vector2 facingVector;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private ServerCharacter serverCharacter;
     [SerializeField] private InteractionHandler interactionHandler;
+    [SerializeField] private ClientCharacterWeapon clientCharacterWeapon;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     [Header("Gameplay Variables")]
     [SerializeField] private float movementSpeed = 1f;
-
+    [SerializeField] private float attackSpeed = 0.5f;
+    
     private Player ownerPlayer;
+    private float attackCooldownTime = 0f;
 
     public override void OnNetworkSpawn()
     {
@@ -27,6 +34,13 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         }
 
         SetOwnerPlayer();
+
+        serverCharacter.FacingRight.OnValueChanged += HandleFacingFlip;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        serverCharacter.FacingRight.OnValueChanged -= HandleFacingFlip;
     }
 
     private void SetOwnerPlayer()
@@ -41,14 +55,65 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     private void Update()
     {
-        movementVector = new Vector2(input.Move.x * movementSpeed, input.Move.y * movementSpeed);
+        UpdateFacing();
+        UpdateMovement();
+        UpdateAttack();
     }
 
     private void FixedUpdate()
     {
         Vector2 targetPosition = rb.position + movementVector * Time.fixedDeltaTime;
         rb.MovePosition(targetPosition);
+
+        facingVector = movementVector.normalized;
     }
+
+    private void UpdateFacing()
+    {
+        bool facingRight = serverCharacter.FacingRight.Value;
+        if (facingVector.x < 0f && facingRight)
+        {
+            HandleFacingFlip(facingRight, false);
+            serverCharacter.SetFacingRpc(false);
+        }
+        else if(facingVector.x > 0 && !facingRight)
+        {
+            HandleFacingFlip(facingRight, true);
+            serverCharacter.SetFacingRpc(true);
+        }
+    }
+
+    private void HandleFacingFlip(bool prevFacingRight, bool currFacingRight)
+    {
+        spriteRenderer.flipX = !currFacingRight;
+
+        clientCharacterWeapon.HandleFacingFlip(currFacingRight);
+    }
+
+    private void UpdateMovement()
+    {
+        movementVector = new Vector2(input.Move.x * movementSpeed, input.Move.y * movementSpeed);
+    }
+
+    private void UpdateAttack()
+    {
+        if (input.Attack)
+        {
+            if (attackCooldownTime <= 0f)
+            {
+                attackCooldownTime = attackSpeed;
+                TryAttack();
+            }
+        }
+
+        attackCooldownTime -= Time.deltaTime;
+    }
+
+    private void TryAttack()
+    {
+        clientCharacterWeapon.HandleAttack();
+    }
+
 
     #region IPlayerCharacter
     public GameObject GameObject => gameObject;
@@ -65,7 +130,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     public void HandleMousePosition(in Vector3 worldPosition)
     {
-
+        cursorPosition = worldPosition;
     }
 
     public void HandleMoveInput(in Vector2 moveInput)
