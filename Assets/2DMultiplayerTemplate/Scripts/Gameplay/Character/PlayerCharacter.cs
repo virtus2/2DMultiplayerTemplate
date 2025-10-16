@@ -143,4 +143,9 @@ public class PlayerCharacter : Character, IPlayerCharacter
     {
 
     }
+
+    public void HandleEquipInput(bool equipInput, int index)
+    {
+        throw new System.NotImplementedException();
+    }
 }

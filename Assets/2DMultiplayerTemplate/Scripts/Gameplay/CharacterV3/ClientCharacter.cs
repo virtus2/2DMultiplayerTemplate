@@ -8,6 +8,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     [SerializeField] private Vector3 cursorPosition;
     [SerializeField] private Vector2 movementVector;
     [SerializeField] private Vector2 facingVector;
+    [SerializeField] private int equippedWeaponType = 0;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
@@ -27,20 +28,21 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     {
         interactionHandler.enabled = IsOwner;
 
-        if (!IsOwner)
-        {
-            enabled = false;
-            return;
-        }
-
         SetOwnerPlayer();
 
         serverCharacter.FacingRight.OnValueChanged += HandleFacingFlip;
+        serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
+
+        if (IsOwner)
+        {
+            clientCharacterWeapon.HandleEquipWeapon(0);
+        }
     }
 
     public override void OnNetworkDespawn()
     {
         serverCharacter.FacingRight.OnValueChanged -= HandleFacingFlip;
+        serverCharacter.EquippedWeaponIndex.OnValueChanged -= HandleEquipWeapon;
     }
 
     private void SetOwnerPlayer()
@@ -55,9 +57,12 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     private void Update()
     {
-        UpdateFacing();
-        UpdateMovement();
-        UpdateAttack();
+        if(IsOwner)
+        {
+            UpdateFacing();
+            UpdateMovement();
+            UpdateAttack();
+        }
     }
 
     private void FixedUpdate()
@@ -66,6 +71,8 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         rb.MovePosition(targetPosition);
 
         facingVector = movementVector.normalized;
+
+        clientCharacterWeapon.HandleCursorPosition(cursorPosition);
     }
 
     private void UpdateFacing()
@@ -85,9 +92,25 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     private void HandleFacingFlip(bool prevFacingRight, bool currFacingRight)
     {
+        Debug.Log("HandleFacingFlip");
         spriteRenderer.flipX = !currFacingRight;
 
         clientCharacterWeapon.HandleFacingFlip(currFacingRight);
+    }
+
+    private void HandleEquipWeapon(int prevIndex, int currIndex)
+    {
+        int equippedType = -1;
+        if (currIndex == 0)
+        {
+            equippedType = 0;
+        }
+        else if (currIndex == 1)
+        {
+            equippedType = 1;
+        }
+
+        clientCharacterWeapon.HandleEquipWeapon(equippedType);
     }
 
     private void UpdateMovement()
@@ -136,6 +159,22 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     public void HandleMoveInput(in Vector2 moveInput)
     {
         input.Move = moveInput;
+    }
+
+    public void HandleEquipInput(bool equipInput, int index)
+    {
+        // TODO: Implement equipment hot bar
+        if (index == 0)
+        {
+            equippedWeaponType = 0;
+        }
+        else if (index == 1)
+        {
+            equippedWeaponType = 1;
+        }
+
+        serverCharacter.EquipWeaponRpc(index);
+        clientCharacterWeapon.HandleEquipWeapon(equippedWeaponType);
     }
     #endregion
 }

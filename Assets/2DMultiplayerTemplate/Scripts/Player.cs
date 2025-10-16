@@ -9,6 +9,7 @@ public class Player : NetworkBehaviour
 
     [SerializeField] private PlayerInput playerInput;
     [SerializeField] private IPlayerCharacter playerCharacter;
+    
     private PlayerCamera playerCamera;
 
     private void Awake()
@@ -21,6 +22,24 @@ public class Player : NetworkBehaviour
         playerInput.enabled = IsOwner;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        name = $"{nameof(Player)} - {OwnerClientId}";
+        playerInput.enabled = IsLocalPlayer;
+        playerCamera = FindAnyObjectByType<PlayerCamera>();
+    }
+
+    public void SetPlayerCharacter(IPlayerCharacter character)
+    {
+        playerCharacter = character;
+        if (IsOwner)
+        {
+            playerCamera.SetFollowTarget(character.GameObject);
+        }
+    }
+
+    #region InputAction
     public void OnMove(CallbackContext context)
     {
         Vector2 moveInput = context.ReadValue<Vector2>();
@@ -63,21 +82,25 @@ public class Player : NetworkBehaviour
             playerCharacter.HandleInteractInput(interactInput);
         }
     }
-
-    public override void OnNetworkSpawn()
+    
+    public void OnEquipOne(CallbackContext context)
     {
-        base.OnNetworkSpawn();
-        name = $"{nameof(Player)} - {OwnerClientId}";
-        playerInput.enabled = IsLocalPlayer;
-        playerCamera = FindAnyObjectByType<PlayerCamera>();
-    }
+        bool interactInput = context.ReadValueAsButton();
 
-    public void SetPlayerCharacter(IPlayerCharacter character)
-    {
-        playerCharacter = character;
-        if (IsOwner)
+        if (playerCharacter != null)
         {
-            playerCamera.SetFollowTarget(character.GameObject);
+            playerCharacter.HandleEquipInput(interactInput, 0);
         }
     }
+
+    public void OnEquipTwo(CallbackContext context)
+    {
+        bool interactInput = context.ReadValueAsButton();
+
+        if (playerCharacter != null)
+        {
+            playerCharacter.HandleEquipInput(interactInput, 1);
+        }
+    }
+    #endregion
 }

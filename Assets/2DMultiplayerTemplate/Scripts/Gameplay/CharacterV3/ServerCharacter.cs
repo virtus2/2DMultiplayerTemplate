@@ -5,6 +5,7 @@ using UnityEngine;
 public class ServerCharacter : NetworkBehaviour
 {
     public NetworkVariable<bool> FacingRight;
+    public NetworkVariable<int> EquippedWeaponIndex;
 
     [SerializeField] private ClientCharacter clientCharacter;
 
@@ -21,5 +22,11 @@ public class ServerCharacter : NetworkBehaviour
     public void SetFacingRpc(bool facingRight)
     {
         FacingRight.Value = facingRight;
+    }
+
+    [Rpc(SendTo.Server)]
+    public void EquipWeaponRpc(int index)
+    {
+        EquippedWeaponIndex.Value = index;
     }
 }

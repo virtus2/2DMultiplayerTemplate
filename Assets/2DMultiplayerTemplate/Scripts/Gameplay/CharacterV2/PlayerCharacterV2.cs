@@ -135,4 +135,9 @@ public class PlayerCharacterV2 : CharacterV2, IPlayerCharacter
     {
 
     }
+
+    public void HandleEquipInput(bool equipInput, int index)
+    {
+        throw new System.NotImplementedException();
+    }
 }
