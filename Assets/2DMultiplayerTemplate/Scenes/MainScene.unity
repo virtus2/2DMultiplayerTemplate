@@ -1380,6 +1380,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   playerCharacterPrefab: {fileID: 2960817192275098128, guid: f859c7174eaf6504d90ad8088734d38e, type: 3}
   aiCharacterPrefab: {fileID: 2960817192275098128, guid: bead2b48848cbde41af82b1329906aaf, type: 3}
+  projectilePrefab: {fileID: 9042507271424264613, guid: 3a2b991207c791a4f897fa91fd27b9d7, type: 3}
   prevMainMenuState: 0
   currMainMenuState: 0
 --- !u!1660057539 &9223372036854775807

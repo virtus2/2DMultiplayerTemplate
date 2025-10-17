@@ -30,7 +30,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
         SetOwnerPlayer();
 
-        serverCharacter.FacingRight.OnValueChanged += HandleFacingFlip;
+        serverCharacter.FacingRight.OnValueChanged += HandleServerFacingRightFlip;
         serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
 
         if (IsOwner)
@@ -41,7 +41,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     public override void OnNetworkDespawn()
     {
-        serverCharacter.FacingRight.OnValueChanged -= HandleFacingFlip;
+        serverCharacter.FacingRight.OnValueChanged -= HandleServerFacingRightFlip;
         serverCharacter.EquippedWeaponIndex.OnValueChanged -= HandleEquipWeapon;
     }
 
@@ -80,22 +80,28 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         bool facingRight = serverCharacter.FacingRight.Value;
         if (facingVector.x < 0f && facingRight)
         {
-            HandleFacingFlip(facingRight, false);
+            FacingRightFlip(false);
             serverCharacter.SetFacingRpc(false);
         }
         else if(facingVector.x > 0 && !facingRight)
         {
-            HandleFacingFlip(facingRight, true);
+            FacingRightFlip(true);
             serverCharacter.SetFacingRpc(true);
         }
     }
 
-    private void HandleFacingFlip(bool prevFacingRight, bool currFacingRight)
+    private void HandleServerFacingRightFlip(bool prevFacingRight, bool currFacingRight)
     {
-        Debug.Log("HandleFacingFlip");
+        // Called on simulated proxy
+        Debug.Log($"HandleServerFacingRightFlip: ownerClientId({OwnerClientId}), name({name})");
         spriteRenderer.flipX = !currFacingRight;
-
         clientCharacterWeapon.HandleFacingFlip(currFacingRight);
+    }
+
+    private void FacingRightFlip(bool flip)
+    {
+        spriteRenderer.flipX = !flip;
+        clientCharacterWeapon.HandleFacingFlip(flip);
     }
 
     private void HandleEquipWeapon(int prevIndex, int currIndex)
@@ -134,6 +140,15 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     private void TryAttack()
     {
+        if (equippedWeaponType == 0)
+        {
+
+        }
+        else if (equippedWeaponType == 1)
+        {
+            Vector2 direction = cursorPosition - transform.position;
+            serverCharacter.AttackRangedWeaponRpc(direction.normalized);
+        }
         clientCharacterWeapon.HandleAttack();
     }
 

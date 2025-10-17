@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private NetworkObject playerCharacterPrefab;
     [SerializeField] private NetworkObject aiCharacterPrefab;
+    [SerializeField] private NetworkObject projectilePrefab;
 
     [Header("MainMenu")]
     // MainMenu
@@ -191,6 +192,18 @@ public class GameManager : MonoBehaviour
             position: position,
             rotation: rotation
         );
+    }
+
+    public void CreateProjectile(IAttacker attacker, ulong ownerClientId, float projSpeed, in Vector3 position, in Quaternion rotation, in Vector2 direction)
+    {
+        NetworkObject obj = projectilePrefab.InstantiateAndSpawn(networkManager,
+            ownerClientId: ownerClientId,
+            position: position,
+            rotation: rotation
+        );
+
+        Projectile projectile = obj.GetComponent<Projectile>();
+        projectile.Initialize(attacker, direction, projSpeed);
     }
 
     public void RequestQuit()
