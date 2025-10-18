@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 
-public class ServerCharacter : NetworkBehaviour, IAttacker
+public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 {
     public NetworkVariable<bool> FacingRight;
     public NetworkVariable<int> EquippedWeaponIndex;
@@ -44,5 +44,10 @@ public class ServerCharacter : NetworkBehaviour, IAttacker
             damageAmount = 1f,
         };
         return damageInfo;
+    }
+
+    public void TakeDamage(in DamageInfo damageInfo)
+    {
+
     }
 }

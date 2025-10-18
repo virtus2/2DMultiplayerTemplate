@@ -25,7 +25,6 @@ public class ClientCharacterWeapon : MonoBehaviour
     {
         if (currentEquippedType == 1)
         {
-
             Vector2 direction = (position - transform.position).normalized;
             rangedWeaponParent.transform.right = direction;
 

@@ -32,10 +32,17 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
         serverCharacter.FacingRight.OnValueChanged += HandleServerFacingRightFlip;
         serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
+    }
 
+    protected override void OnNetworkPostSpawn()
+    {
         if (IsOwner)
         {
-            clientCharacterWeapon.HandleEquipWeapon(0);
+            HandleEquipInput(true, 0);
+        }
+        else
+        {
+            HandleEquipWeapon(-1, serverCharacter.EquippedWeaponIndex.Value);
         }
     }
 
