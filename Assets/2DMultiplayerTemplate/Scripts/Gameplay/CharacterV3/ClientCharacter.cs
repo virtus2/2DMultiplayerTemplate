@@ -154,7 +154,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         else if (equippedWeaponType == 1)
         {
             Vector2 direction = cursorPosition - transform.position;
-            serverCharacter.AttackRangedWeaponRpc(direction.normalized);
+            serverCharacter.AttackRangedWeaponRpc(transform.position, direction.normalized);
         }
         clientCharacterWeapon.HandleAttack();
     }

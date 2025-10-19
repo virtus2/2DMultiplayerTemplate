@@ -31,9 +31,9 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
     }
 
     [Rpc(SendTo.Server)]
-    public void AttackRangedWeaponRpc(Vector2 direction)
+    public void AttackRangedWeaponRpc(Vector2 position, Vector2 direction)
     {
-        GameManager.Instance.CreateProjectile(this, OwnerClientId, 10f, transform.position, Quaternion.identity, direction);
+        GameManager.Instance.CreateProjectile(this, OwnerClientId, 10f, position, Quaternion.identity, direction);
     }
 
     public DamageInfo GetDamageInfo(IDamageable target)
