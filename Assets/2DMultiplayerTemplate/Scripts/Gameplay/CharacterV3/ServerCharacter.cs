@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
@@ -30,10 +31,57 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
         EquippedWeaponIndex.Value = index;
     }
 
-    [Rpc(SendTo.Server)]
-    public void AttackRangedWeaponRpc(Vector2 position, Vector2 direction)
+    public void AttackRangedWeapon(Vector2 position, Vector2 direction, float projectileSpeed)
     {
-        GameManager.Instance.CreateProjectile(this, OwnerClientId, 10f, position, Quaternion.identity, direction);
+        // Projectile
+        // Create projectile for client prediction
+        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, position, Quaternion.identity);
+        clientProjectile.Direction = direction;
+        clientProjectile.MovementSpeed = projectileSpeed;
+        clientProjectile.Owner = gameObject;
+
+        // Create projectile for server-side collision
+        int ownerTick = NetworkManager.NetworkTickSystem.LocalTime.Tick;
+        CreateServerProjectileRpc(position, direction, projectileSpeed, ownerTick);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void CreateServerProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick)
+    {
+        NetworkTime elapsedTime = NetworkManager.LocalTime.TimeTicksAgo(ownerTick);
+        float elapsedTimeAsFloat = elapsedTime.TimeAsFloat;
+        
+        Vector2 startPosition = position + (direction * projectileSpeed * elapsedTimeAsFloat);
+
+        NetworkObject obj = GameManager.Instance.ServerProjectilePrefab.InstantiateAndSpawn(NetworkManager,
+            ownerClientId: OwnerClientId,
+            position: startPosition,
+            rotation: Quaternion.identity
+        );
+
+        ServerProjectile serverProjectile = obj.GetComponent<ServerProjectile>();
+        serverProjectile.Direction = direction;
+        serverProjectile.MovementSpeed = projectileSpeed;
+        serverProjectile.Owner = gameObject;
+
+        // Create projectile for other clients (except shooter client)
+        CreateClientProjectileRpc(position, direction, projectileSpeed, ownerTick, OwnerClientId);
+    }
+
+    [Rpc(SendTo.NotAuthority)]
+    private void CreateClientProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick, ulong ownerClientId)
+    {
+        if (ownerClientId == NetworkManager.LocalClientId) return;
+
+        NetworkTime elapsedTime = NetworkManager.LocalTime.TimeTicksAgo(ownerTick);
+        float elapsedTimeAsFloat = elapsedTime.TimeAsFloat;
+
+        Vector2 startPosition = position + (direction * projectileSpeed * elapsedTimeAsFloat);
+
+        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, startPosition, Quaternion.identity);
+        clientProjectile.Direction = direction;
+        clientProjectile.MovementSpeed = projectileSpeed;
+        clientProjectile.Owner = gameObject;
     }
 
     public DamageInfo GetDamageInfo(IDamageable target)
@@ -48,6 +96,6 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 
     public void TakeDamage(in DamageInfo damageInfo)
     {
-
+        Debug.Log($"TakeDamage {damageInfo.damageAmount}");
     }
 }

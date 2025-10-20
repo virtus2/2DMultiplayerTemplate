@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,12 +22,15 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    private NetworkManager networkManager;
-    private ConnectionManager connectionManager;
 
+    public ClientProjectile ClientProjectilePrefab;
+    public NetworkObject ServerProjectilePrefab;
     [SerializeField] private NetworkObject playerCharacterPrefab;
     [SerializeField] private NetworkObject aiCharacterPrefab;
     [SerializeField] private NetworkObject projectilePrefab;
+
+    private NetworkManager networkManager;
+    private ConnectionManager connectionManager;
 
     [Header("MainMenu")]
     // MainMenu
@@ -192,18 +196,6 @@ public class GameManager : MonoBehaviour
             position: position,
             rotation: rotation
         );
-    }
-
-    public void CreateProjectile(IAttacker attacker, ulong ownerClientId, float projSpeed, in Vector3 position, in Quaternion rotation, in Vector2 direction)
-    {
-        NetworkObject obj = projectilePrefab.InstantiateAndSpawn(networkManager,
-            ownerClientId: ownerClientId,
-            position: position,
-            rotation: rotation
-        );
-
-        Projectile projectile = obj.GetComponent<Projectile>();
-        projectile.Initialize(attacker, direction, projSpeed);
     }
 
     public void RequestQuit()

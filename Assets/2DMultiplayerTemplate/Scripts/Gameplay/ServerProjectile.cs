@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class ClientProjectile : MonoBehaviour
+public class ServerProjectile : NetworkBehaviour
 {
     public Vector2 Direction;
     public float MovementSpeed;
@@ -17,7 +17,11 @@ public class ClientProjectile : MonoBehaviour
         if (collision.gameObject == Owner) return;
         if (collision.TryGetComponent<IDamageable>(out var damageable))
         {
-            Destroy(gameObject);
+            IAttacker attacker = Owner.GetComponent<IAttacker>();
+            DamageInfo damageInfo = attacker.GetDamageInfo(damageable);
+            damageable.TakeDamage(damageInfo);
+
+            NetworkObject.Despawn();
         }
     }
 }

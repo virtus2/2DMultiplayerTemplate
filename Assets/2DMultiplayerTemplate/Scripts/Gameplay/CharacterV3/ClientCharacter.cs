@@ -20,6 +20,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     [Header("Gameplay Variables")]
     [SerializeField] private float movementSpeed = 1f;
     [SerializeField] private float attackSpeed = 0.5f;
+    [SerializeField] private float projectileSpeed = 10f;
     
     private Player ownerPlayer;
     private float attackCooldownTime = 0f;
@@ -154,7 +155,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         else if (equippedWeaponType == 1)
         {
             Vector2 direction = cursorPosition - transform.position;
-            serverCharacter.AttackRangedWeaponRpc(transform.position, direction.normalized);
+            serverCharacter.AttackRangedWeapon(transform.position, direction.normalized, projectileSpeed);
         }
         clientCharacterWeapon.HandleAttack();
     }
