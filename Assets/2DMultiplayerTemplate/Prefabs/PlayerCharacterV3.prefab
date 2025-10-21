@@ -503,13 +503,15 @@ MonoBehaviour:
   movementVector: {x: 0, y: 0}
   facingVector: {x: 0, y: 0}
   equippedWeaponType: 0
+  currentSector: {x: 0, y: 0}
   rb: {fileID: 7626085548226502691}
   serverCharacter: {fileID: -6506182701493847543}
   interactionHandler: {fileID: 7559314112169231877}
   clientCharacterWeapon: {fileID: 2358968841754274346}
   spriteRenderer: {fileID: 4103096533881396164}
-  movementSpeed: 1
+  movementSpeed: 3
   attackSpeed: 0.5
+  projectileSpeed: 10
 --- !u!114 &-6506182701493847543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -523,6 +525,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ServerCharacter
   ShowTopMostFoldoutHeaderGroup: 1
+  currentSector: {x: 0, y: 0}
   FacingRight:
     m_InternalValue: 0
   EquippedWeaponIndex:

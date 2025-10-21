@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 {
+    [Header("ReadOnly Variables")]
+    [SerializeField] private Vector2Int currentSector;
+
     public NetworkVariable<bool> FacingRight;
     public NetworkVariable<int> EquippedWeaponIndex;
 
@@ -17,6 +20,12 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
             enabled = false;
             return;
         }
+        currentSector = new Vector2Int(int.MinValue, int.MinValue);
+    }
+
+    private void FixedUpdate()
+    {
+        UpdateSector();
     }
 
     [Rpc(SendTo.Server)]
@@ -84,6 +93,17 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
         clientProjectile.Owner = gameObject;
     }
 
+    private void UpdateSector()
+    {
+        Vector2Int movedSector = GameManager.Instance.GetSectorPosition(transform.position);
+        if (currentSector != movedSector)
+        {
+            GameManager.Instance.UpdateServerSector(OwnerClientId, currentSector, movedSector);
+            currentSector = movedSector;
+        }
+    }
+
+    #region IDamageable
     public DamageInfo GetDamageInfo(IDamageable target)
     {
         DamageInfo damageInfo = new DamageInfo()
@@ -98,4 +118,5 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
     {
         Debug.Log($"TakeDamage {damageInfo.damageAmount}");
     }
+    #endregion
 }

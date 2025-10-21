@@ -9,6 +9,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     [SerializeField] private Vector2 movementVector;
     [SerializeField] private Vector2 facingVector;
     [SerializeField] private int equippedWeaponType = 0;
+    [SerializeField] private Vector2Int currentSector;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
@@ -33,6 +34,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
         serverCharacter.FacingRight.OnValueChanged += HandleServerFacingRightFlip;
         serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
+        currentSector = new Vector2Int(int.MinValue, int.MinValue);
     }
 
     protected override void OnNetworkPostSpawn()
@@ -70,14 +72,17 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
             UpdateFacing();
             UpdateMovement();
             UpdateAttack();
+            UpdateSector();
         }
     }
 
     private void FixedUpdate()
     {
+        // Physics movement 
         Vector2 targetPosition = rb.position + movementVector * Time.fixedDeltaTime;
         rb.MovePosition(targetPosition);
 
+        // Update facing vector using physics movement
         facingVector = movementVector.normalized;
 
         clientCharacterWeapon.HandleCursorPosition(cursorPosition);
@@ -130,6 +135,16 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     private void UpdateMovement()
     {
         movementVector = new Vector2(input.Move.x * movementSpeed, input.Move.y * movementSpeed);
+    }
+
+    private void UpdateSector()
+    {
+        Vector2Int movedSector = GameManager.Instance.GetSectorPosition(transform.position);
+        if (currentSector != movedSector)
+        {
+            GameManager.Instance.UpdateClientSector(currentSector, movedSector);
+            currentSector = movedSector;
+        }
     }
 
     private void UpdateAttack()

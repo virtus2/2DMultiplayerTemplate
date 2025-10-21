@@ -38,6 +38,15 @@ public class Player : NetworkBehaviour
             playerCamera.SetFollowTarget(character.GameObject);
         }
     }
+    
+    public bool TryGetPlayerCharacter(out IPlayerCharacter character)
+    {
+        character = null;
+        if (playerCharacter == null) return false;
+
+        character = playerCharacter;
+        return true;
+    }
 
     #region InputAction
     public void OnMove(CallbackContext context)
