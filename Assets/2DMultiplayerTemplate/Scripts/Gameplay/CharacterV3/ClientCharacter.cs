@@ -9,7 +9,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     [SerializeField] private Vector2 movementVector;
     [SerializeField] private Vector2 facingVector;
     [SerializeField] private int equippedWeaponType = 0;
-    [SerializeField] private Vector2Int currentSector;
+    [SerializeField] private Vector2Int currentChunk;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
@@ -30,22 +30,28 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
     {
         interactionHandler.enabled = IsOwner;
 
-        SetOwnerPlayer();
+        if (!IsOwner)
+        {
+            enabled = false;
+            HandleEquipWeapon(-1, serverCharacter.EquippedWeaponIndex.Value);
+            serverCharacter.FacingRight.OnValueChanged += HandleServerFacingRightFlip;
+            serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
+            return;
+        }
 
-        serverCharacter.FacingRight.OnValueChanged += HandleServerFacingRightFlip;
-        serverCharacter.EquippedWeaponIndex.OnValueChanged += HandleEquipWeapon;
-        currentSector = new Vector2Int(int.MinValue, int.MinValue);
+        SetOwnerPlayer();
+        HandleEquipInput(true, 0);
+
+        currentChunk = new Vector2Int(int.MinValue, int.MinValue);
     }
 
     protected override void OnNetworkPostSpawn()
     {
         if (IsOwner)
         {
-            HandleEquipInput(true, 0);
         }
         else
         {
-            HandleEquipWeapon(-1, serverCharacter.EquippedWeaponIndex.Value);
         }
     }
 
@@ -67,13 +73,10 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     private void Update()
     {
-        if(IsOwner)
-        {
-            UpdateFacing();
-            UpdateMovement();
-            UpdateAttack();
-            UpdateSector();
-        }
+        UpdateFacing();
+        UpdateMovement();
+        UpdateAttack();
+        UpdateChunk();
     }
 
     private void FixedUpdate()
@@ -137,13 +140,13 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         movementVector = new Vector2(input.Move.x * movementSpeed, input.Move.y * movementSpeed);
     }
 
-    private void UpdateSector()
+    private void UpdateChunk()
     {
-        Vector2Int movedSector = GameManager.Instance.GetSectorPosition(transform.position);
-        if (currentSector != movedSector)
+        Vector2Int movedChunk = ClientChunkLoader.GetChunkPosition(transform.position);
+        if (currentChunk != movedChunk)
         {
-            GameManager.Instance.UpdateClientSector(currentSector, movedSector);
-            currentSector = movedSector;
+            GameManager.Instance.ClientChunkLoader.UpdateChunk(currentChunk, movedChunk);
+            currentChunk = movedChunk;
         }
     }
 
@@ -170,11 +173,44 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         else if (equippedWeaponType == 1)
         {
             Vector2 direction = cursorPosition - transform.position;
-            serverCharacter.AttackRangedWeapon(transform.position, direction.normalized, projectileSpeed);
+            AttackRangedWeapon(transform.position, direction.normalized, projectileSpeed);
         }
         clientCharacterWeapon.HandleAttack();
     }
 
+    private void AttackRangedWeapon(Vector2 position, Vector2 direction, float projectileSpeed)
+    {
+        // Projectile
+        // 1. Create projectile for client prediction
+        // 2. Create projectile for server collision (ServerCharacter.CreateServerProjectileRpc)
+        // 3. Create projectile for other clients visual (ClientCharacter.CreateClientProjectileRpc)
+
+        // Create projectile for client prediction
+        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, position, Quaternion.identity);
+        clientProjectile.Direction = direction;
+        clientProjectile.MovementSpeed = projectileSpeed;
+        clientProjectile.Owner = gameObject;
+
+        int ownerTick = NetworkManager.NetworkTickSystem.LocalTime.Tick;
+        serverCharacter.CreateServerProjectileRpc(position, direction, projectileSpeed, ownerTick);
+    }
+
+    [Rpc(SendTo.NotAuthority)]
+    public void CreateClientProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick, ulong ownerClientId)
+    {
+        // Create projectile for other clients visual
+        if (ownerClientId == NetworkManager.LocalClientId) return;
+
+        NetworkTime elapsedTime = NetworkManager.LocalTime.TimeTicksAgo(ownerTick);
+        float elapsedTimeAsFloat = elapsedTime.TimeAsFloat;
+
+        Vector2 startPosition = position + (direction * projectileSpeed * elapsedTimeAsFloat);
+
+        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, startPosition, Quaternion.identity);
+        clientProjectile.Direction = direction;
+        clientProjectile.MovementSpeed = projectileSpeed;
+        clientProjectile.Owner = gameObject;
+    }
 
     #region IPlayerCharacter
     public GameObject GameObject => gameObject;

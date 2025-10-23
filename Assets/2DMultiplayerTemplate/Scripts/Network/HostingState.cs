@@ -26,7 +26,8 @@ public class HostingState : ConnectionState
         if (!networkManager.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
             return;
 
-        GameManager.Instance.HandleClientConnected(clientId);
+        GameManager.Instance.CreatePlayerCharacterOnClientConnected(clientId);
+        GameManager.Instance.InitializeServerChunkOnClientConnected(clientId);
     }
 
     public override void HandleClientDisconnected(ulong clientId)

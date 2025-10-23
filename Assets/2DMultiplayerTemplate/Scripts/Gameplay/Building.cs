@@ -26,16 +26,12 @@ public class Building : NetworkBehaviour, IInteractable, IDamageable
 
     [SerializeField] private SpriteRenderer spriteRenderer;
 
-    private void Awake()
-    {
-
-    }
-
     public override void OnNetworkSpawn()
     {
         if (HasAuthority)
         {
             NetworkObject.CheckObjectVisibility += CheckObjectVisibility;
+            GameManager.Instance.ServerChunkLoader.AddObjectToChunk(NetworkObject);
         }
         else
         {
@@ -52,11 +48,17 @@ public class Building : NetworkBehaviour, IInteractable, IDamageable
         if (HasAuthority)
         {
             NetworkObject.CheckObjectVisibility -= CheckObjectVisibility;
+            GameManager.Instance.ServerChunkLoader.RemoveObjectFromChunk(NetworkObject);
         }
         else
         {
             craftInfo.OnValueChanged -= OnCraftInfoChanged;
         }
+    }
+
+    private bool CheckObjectVisibility(ulong clientId)
+    {
+        return ServerChunkLoader.CheckObjectVisibility(clientId, NetworkObject);
     }
 
     private void OnCraftInfoChanged(CraftInfo prev, CraftInfo curr)
@@ -81,19 +83,6 @@ public class Building : NetworkBehaviour, IInteractable, IDamageable
         spriteRenderer.color = Color.Lerp(Color.red, Color.green, progress);
 
         elapsedTime += Time.deltaTime;
-    }
-
-    public bool CheckObjectVisibility(ulong clientId)
-    {
-        if (!IsSpawned) return false;
-        if (!NetworkManager.ConnectedClients[clientId].PlayerObject.TryGetComponent<Player>(out var player)) return false;
-        if (!player.TryGetPlayerCharacter(out var playerCharacter)) return false;
-
-        Vector2Int characterSectorPosition = GameManager.Instance.GetSectorPosition(playerCharacter.GameObject.transform.position);
-        Vector2Int sectorPosition = GameManager.Instance.GetSectorPosition(transform.position);
-        int distanceX = Mathf.Abs(characterSectorPosition.x - sectorPosition.x);
-        int distanceY = Mathf.Abs(characterSectorPosition.y - sectorPosition.y);
-        return distanceX >= 0 && distanceX < 2 && distanceY >= 0 && distanceY < 2;
     }
 
     public void OnInteract()

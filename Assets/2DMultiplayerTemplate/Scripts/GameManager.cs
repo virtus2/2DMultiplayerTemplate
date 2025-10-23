@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 
 public enum EMainMenuState
@@ -12,6 +13,7 @@ public enum EMainMenuState
     Singleplayer,
     Multiplayer,
     MultiplayerJoinIP,
+    MultiplayerJoinSteam,
 
     SelectSaveFile,
     NewSave,
@@ -23,22 +25,13 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    [SerializeField] private ServerChunkLoader serverChunkLoader;
+    [SerializeField] private ClientChunkLoader clientChunkLoader;
+
     [Header("Test")]
     public int BuildingIndex = 0;
     public int BuildingLength = 12;
 
-    [Header("Sector")]
-    public static int SectorSizeX = 8;
-    public static int SectorSizeY = 8;
-    private Grid sectorGrid;
-    private HashSet<Vector2Int> loadedSectors = new HashSet<Vector2Int>();
-    private HashSet<Vector2Int> sectorsToUnload = new HashSet<Vector2Int>();
-    private HashSet<Vector2Int> newSectors = new HashSet<Vector2Int>();
-
-    private Dictionary<ulong, HashSet<Vector2Int>> loadedSectorsByClientIds = new Dictionary<ulong, HashSet<Vector2Int>>();
-    private Dictionary<ulong, HashSet<Vector2Int>> sectorsToUnloadByClientIds = new Dictionary<ulong, HashSet<Vector2Int>>();
-    private Dictionary<ulong, HashSet<Vector2Int>> newSectorsByClientIds = new Dictionary<ulong, HashSet<Vector2Int>>();
-    private Dictionary<Vector2Int, List<NetworkObject>> sectorObjects = new Dictionary<Vector2Int, List<NetworkObject>>();
 
     [Header("Projectiles")]
     public ClientProjectile ClientProjectilePrefab;
@@ -58,7 +51,24 @@ public class GameManager : MonoBehaviour
     [SerializeField] private EMainMenuState currMainMenuState;
     private string ipAddress = "127.0.0.1";
     private string port = "7777";
-    
+    private string lobbyNumber = "";
+
+    public ServerChunkLoader ServerChunkLoader
+    {
+        get
+        {
+            Debug.Assert(networkManager.IsServer);
+            return serverChunkLoader;
+        }
+    }
+    public ClientChunkLoader ClientChunkLoader
+    {
+        get
+        {
+            Debug.Assert(networkManager.IsClient);
+            return clientChunkLoader;
+        }
+    }
     private void Awake()
     {
         Instance = this;
@@ -125,7 +135,7 @@ public class GameManager : MonoBehaviour
                     }
                     if (GUILayout.Button("Join via Steam"))
                     {
-                        connectionManager.ShowSteamFriendOverlay();
+                        ChangeMainMenu(EMainMenuState.MultiplayerJoinSteam);
                     }
                     if (GUILayout.Button("Host"))
                     {
@@ -134,7 +144,7 @@ public class GameManager : MonoBehaviour
                     }
                     if (GUILayout.Button("Back"))
                     {
-                        BackToPreviousMenu();
+                        ChangeMainMenu(EMainMenuState.Main);
                     }
                     break;
 
@@ -152,6 +162,25 @@ public class GameManager : MonoBehaviour
                             connectionManager.StartClientIP(ipAddress, result);
                             ChangeMainMenu(EMainMenuState.None);
                         }
+                    }
+                    if (GUILayout.Button("Back"))
+                    {
+                        BackToPreviousMenu();
+                    }
+                    break;
+
+                case EMainMenuState.MultiplayerJoinSteam:
+                    GUILayout.Label("Enter lobby:");
+                    lobbyNumber = GUILayout.TextField(lobbyNumber);
+                    if (GUILayout.Button("Enter"))
+                    {
+                        connectionManager.StartClientSteamLobby(lobbyNumber);
+                        ChangeMainMenu(EMainMenuState.None);
+                    }
+
+                    if (GUILayout.Button("Invite friend"))
+                    {
+                        connectionManager.ShowSteamFriendOverlay();
                     }
                     if (GUILayout.Button("Back"))
                     {
@@ -204,14 +233,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void HandleClientConnected(ulong clientId)
+    public void CreatePlayerCharacterOnClientConnected(ulong clientId)
     {
         Vector3 spawnPosition = Random.insideUnitCircle * 3f;
         CreatePlayerCharacter(clientId, spawnPosition, Quaternion.identity);
+    }
 
-        loadedSectorsByClientIds.Add(clientId, new HashSet<Vector2Int>());
-        sectorsToUnloadByClientIds.Add(clientId, new HashSet<Vector2Int>());
-        newSectorsByClientIds.Add(clientId, new HashSet<Vector2Int>());
+    public void InitializeServerChunkOnClientConnected(ulong clientId)
+    {
+        ServerChunkLoader.HandleClientConnected(clientId);
     }
 
     private void CreatePlayerCharacter(ulong clientId, in Vector3 position, in Quaternion rotation)
@@ -252,159 +282,11 @@ public class GameManager : MonoBehaviour
         
         
         BuildingIndex++;
-
-        AddSectorObject(obj);
-    }
-
-    public Vector2Int GetSectorPosition(Vector2 worldPosition)
-    {
-        int x = Mathf.FloorToInt(worldPosition.x / SectorSizeX);
-        int y = Mathf.FloorToInt(worldPosition.y / SectorSizeY);
-        return new Vector2Int(x, y);
-    }
-
-    public void UpdateClientSector(Vector2Int prevSector, Vector2Int currSector)
-    {
-        Debug.Log($"UpdateClientSector prevSector:{prevSector} currSector:{currSector}");
-        newSectors.Clear();
-
-        for (int i = -1; i <= 1; i++)
-        {
-            for (int j = -1; j <= 1; j++)
-            {
-                int x = currSector.x + i;
-                int y = currSector.y + j;
-                Vector2Int neighborSector = new Vector2Int(x, y);
-                newSectors.Add(neighborSector);
-            }
-        }
-
-        // Find sectors to unload
-        sectorsToUnload.Clear();
-        foreach (Vector2Int sector in loadedSectors)
-        {
-            if (!newSectors.Contains(sector))
-            {
-                sectorsToUnload.Add(sector);
-            }
-        }
-
-        // Unload sectors
-        foreach (Vector2Int sector in sectorsToUnload)
-        {
-            UnloadSector(sector);
-            loadedSectors.Remove(sector);
-        }
-
-        // Find sectors to load
-        foreach (Vector2Int sector in newSectors)
-        {
-            if (!loadedSectors.Contains(sector))
-            {
-                LoadSector(sector);
-                loadedSectors.Add(sector);
-            }
-        }
-    }
-
-
-    private void UnloadSector(Vector2Int sector)
-    {
-    }
-
-    private void LoadSector(Vector2Int sector)
-    {
-    }
-    
-    private void AddSectorObject(NetworkObject networkObject)
-    {
-        Vector2Int sectorPosition = GetSectorPosition(networkObject.transform.position);
-
-        if (sectorObjects.TryGetValue(sectorPosition, out var objects))
-        {
-            objects.Add(networkObject);
-        }
-        else
-        {
-            objects = new List<NetworkObject>();
-            objects.Add(networkObject);
-            sectorObjects.Add(sectorPosition, objects);
-        }
     }
 
     public void RemoveSectorObject(NetworkObject networkObject)
     {
 
-    }
-
-    public void UpdateServerSector(ulong clientId, Vector2Int prevSector, Vector2Int currSector)
-    {
-        Debug.Log($"UpdateServerSector clientId:{clientId} prevSector:{prevSector} currSector:{currSector}");
-        HashSet<Vector2Int> loadedSectors = loadedSectorsByClientIds[clientId];
-        HashSet<Vector2Int> sectorsToUnload = sectorsToUnloadByClientIds[clientId];
-        HashSet<Vector2Int> newSectors = newSectorsByClientIds[clientId];
-
-        newSectors.Clear();
-
-        for (int i = -1; i <= 1; i++)
-        {
-            for (int j = -1; j <= 1; j++)
-            {
-                int x = currSector.x + i;
-                int y = currSector.y + j;
-                Vector2Int neighborSector = new Vector2Int(x, y);
-                newSectors.Add(neighborSector);
-            }
-        }
-
-        // Find sectors to unload
-        sectorsToUnload.Clear();
-        foreach (Vector2Int sector in loadedSectors)
-        {
-            if (!newSectors.Contains(sector))
-            {
-                sectorsToUnload.Add(sector);
-            }
-        }
-
-        // Unload sectors
-        foreach (Vector2Int sector in sectorsToUnload)
-        {
-            DespawnSectorObjects(clientId, sector);
-            loadedSectors.Remove(sector);
-        }
-
-        // Find sectors to load
-        foreach (Vector2Int sector in newSectors)
-        {
-            if (!loadedSectors.Contains(sector))
-            {
-                SpawnSectorObjects(clientId, sector);
-                loadedSectors.Add(sector);
-            }
-        }
-    }
-
-    private void DespawnSectorObjects(ulong clientId, Vector2Int sector)
-    {
-        if (sectorObjects.TryGetValue(sector, out var networkObjects))
-        {
-            foreach (var obj in networkObjects)
-            {
-                obj.NetworkHide(clientId);
-            }
-        }
-    }
-
-    private void SpawnSectorObjects(ulong clientId, Vector2Int sector)
-    {
-        if (sectorObjects.TryGetValue(sector, out var networkObjects))
-        {
-            foreach (var obj in networkObjects)
-            {
-                obj.NetworkShow(clientId);
-            }
-        }
     }
 
     public void RequestQuit()

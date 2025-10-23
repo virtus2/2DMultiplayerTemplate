@@ -108,12 +108,15 @@ public class ConnectionManager : MonoBehaviour
 
 #if UNITY_EDITOR
         ConnectionMethod = new ConnectionMethodUnityTransport(this, MaxConnectedPlayers, ipAddress, port);
+        networkManager.NetworkConfig.NetworkTransport = unityTransport;
 #endif
 
 #if !UNITY_EDITOR
         ConnectionMethod = new ConnectionMethodSteam(this, MaxConnectedPlayers, facepunchTransport);
+        networkManager.NetworkConfig.NetworkTransport = facepunchTransport;
 #endif
 
+        Debug.Log(nameof(networkManager.NetworkConfig.NetworkTransport));
         Application.quitting += ConnectionMethod.HandleApplicationQuit;
         networkManager.OnConnectionEvent += HandleConnectionEvent;
         networkManager.ConnectionApprovalCallback += HandleConnectionApproval;
@@ -208,6 +211,18 @@ public class ConnectionManager : MonoBehaviour
             unityConnection.SetIpAddress(ipAddress);
             unityConnection.SetPort(port);
             currentState.StartClient();
+        }
+    }
+
+    public void StartClientSteamLobby(string lobby)
+    {
+        if (ConnectionMethod is ConnectionMethodSteam steamConnection)
+        {
+            if (ulong.TryParse(lobby, out ulong lobbyNumber))
+            {
+                steamConnection.SetLobby(lobbyNumber);
+                currentState.StartClient();
+            }
         }
     }
 

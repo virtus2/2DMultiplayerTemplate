@@ -13,6 +13,7 @@ public class ConnectionMethodSteam : ConnectionMethod
     private bool connectedToSteam = false;
     private FacepunchTransport facepunchTransport;
     private Lobby? currentLobby;
+    private ulong targetSteamId = 0;
 
     private const string kRichPresense_SteamDisplay = "steam_display";
 
@@ -60,19 +61,33 @@ public class ConnectionMethodSteam : ConnectionMethod
     public override void SetupClientConnection()
     {
         SetConnectionPayload(playerSteamId.ToString(), playerSteamName);
-        if (currentLobby.HasValue)
+        if (targetSteamId != 0)
         {
-            Debug.Log($"SetupClientConnection: targetSteamId is ({currentLobby.Value.Owner.Id})");
-            facepunchTransport.targetSteamId = currentLobby.Value.Owner.Id;
+            Debug.Log($"SetupClientConnection: targetSteamId is ({targetSteamId}) - by user");
+            facepunchTransport.targetSteamId = targetSteamId;
         }
         else
         {
-            Debug.Log($"lobby is null");
+            if (currentLobby.HasValue)
+            {
+                Debug.Log($"SetupClientConnection: targetSteamId is ({currentLobby.Value.Owner.Id}) - by lobby join");
+                facepunchTransport.targetSteamId = currentLobby.Value.Owner.Id;
+            }
+            else
+            {
+                Debug.Log($"lobby is null");
+            }
         }
+    }
+
+    public void SetLobby(SteamId steamId)
+    {
+        targetSteamId = steamId;
     }
 
     public override void SetupDisconnect()
     {
+        targetSteamId = 0;
         LeaveLobby();
     }
 
@@ -152,7 +167,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
     private async void HandleGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
     {
-        // Called when the user tries to join a lobby from their friends list game client should attempt to connect to specified lobby when this is received
+        // Called when the user tries to join a lobby from their friends list. game client should attempt to connect to specified lobby when this is received
         Debug.Log($"HandleGameLobbyJoinRequested: lobby({lobby}), SteamId({steamId})");
         bool isOwner = lobby.Owner.Id.Equals(steamId);
 
@@ -165,6 +180,7 @@ public class ConnectionMethodSteam : ConnectionMethod
 
         currentLobby = lobby;
         SteamId lobbdyOwnerId = lobby.Owner.Id;
+        connectionManager.StartClient();
     }
 
     private void HandleLobbyEntered(Lobby lobby)
@@ -176,7 +192,6 @@ public class ConnectionMethodSteam : ConnectionMethod
         currentLobby = lobby;
 
         Debug.Log($"Entered Lobby ({lobby.Id})");
-        connectionManager.StartClient();
     }
 
     private void LeaveLobby()

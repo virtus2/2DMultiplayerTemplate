@@ -6,12 +6,13 @@ using UnityEngine;
 public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 {
     [Header("ReadOnly Variables")]
-    [SerializeField] private Vector2Int currentSector;
+    [SerializeField] private Vector2Int currentChunk;
 
     public NetworkVariable<bool> FacingRight;
     public NetworkVariable<int> EquippedWeaponIndex;
 
     [SerializeField] private ClientCharacter clientCharacter;
+    private Player ownerPlayer;
 
     public override void OnNetworkSpawn()
     {
@@ -20,7 +21,19 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
             enabled = false;
             return;
         }
-        currentSector = new Vector2Int(int.MinValue, int.MinValue);
+
+        currentChunk = new Vector2Int(int.MinValue, int.MinValue);
+        SetOwnerPlayer();
+    }
+
+    private void SetOwnerPlayer()
+    {
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(OwnerClientId, out NetworkClient client))
+            return;
+
+        bool isOwner = OwnerClientId == NetworkManager.LocalClientId;
+        ownerPlayer = client.PlayerObject.GetComponent<Player>();
+        ownerPlayer.SetPlayerCharacter(clientCharacter);
     }
 
     private void FixedUpdate()
@@ -40,23 +53,10 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
         EquippedWeaponIndex.Value = index;
     }
 
-    public void AttackRangedWeapon(Vector2 position, Vector2 direction, float projectileSpeed)
-    {
-        // Projectile
-        // Create projectile for client prediction
-        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, position, Quaternion.identity);
-        clientProjectile.Direction = direction;
-        clientProjectile.MovementSpeed = projectileSpeed;
-        clientProjectile.Owner = gameObject;
-
-        // Create projectile for server-side collision
-        int ownerTick = NetworkManager.NetworkTickSystem.LocalTime.Tick;
-        CreateServerProjectileRpc(position, direction, projectileSpeed, ownerTick);
-    }
-
     [Rpc(SendTo.Server)]
-    private void CreateServerProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick)
+    public void CreateServerProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick)
     {
+        // Create projectile for server collision (ServerCharacter.CreateServerProjectileRpc)
         NetworkTime elapsedTime = NetworkManager.LocalTime.TimeTicksAgo(ownerTick);
         float elapsedTimeAsFloat = elapsedTime.TimeAsFloat;
         
@@ -74,32 +74,16 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
         serverProjectile.Owner = gameObject;
 
         // Create projectile for other clients (except shooter client)
-        CreateClientProjectileRpc(position, direction, projectileSpeed, ownerTick, OwnerClientId);
-    }
-
-    [Rpc(SendTo.NotAuthority)]
-    private void CreateClientProjectileRpc(Vector2 position, Vector2 direction, float projectileSpeed, int ownerTick, ulong ownerClientId)
-    {
-        if (ownerClientId == NetworkManager.LocalClientId) return;
-
-        NetworkTime elapsedTime = NetworkManager.LocalTime.TimeTicksAgo(ownerTick);
-        float elapsedTimeAsFloat = elapsedTime.TimeAsFloat;
-
-        Vector2 startPosition = position + (direction * projectileSpeed * elapsedTimeAsFloat);
-
-        ClientProjectile clientProjectile = Instantiate(GameManager.Instance.ClientProjectilePrefab, startPosition, Quaternion.identity);
-        clientProjectile.Direction = direction;
-        clientProjectile.MovementSpeed = projectileSpeed;
-        clientProjectile.Owner = gameObject;
+        clientCharacter.CreateClientProjectileRpc(position, direction, projectileSpeed, ownerTick, OwnerClientId);
     }
 
     private void UpdateSector()
     {
-        Vector2Int movedSector = GameManager.Instance.GetSectorPosition(transform.position);
-        if (currentSector != movedSector)
+        Vector2Int movedChunk = ServerChunkLoader.GetChunkPosition(transform.position);
+        if (currentChunk != movedChunk)
         {
-            GameManager.Instance.UpdateServerSector(OwnerClientId, currentSector, movedSector);
-            currentSector = movedSector;
+            GameManager.Instance.ServerChunkLoader.UpdateChunk(OwnerClientId, currentChunk, movedChunk);
+            currentChunk = movedChunk;
         }
     }
 

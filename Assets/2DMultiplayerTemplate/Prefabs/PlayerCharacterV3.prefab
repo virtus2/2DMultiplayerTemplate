@@ -185,10 +185,10 @@ GameObject:
   - component: {fileID: 7466093031090057722}
   - component: {fileID: 629533877819066296}
   - component: {fileID: 123008652995376605}
+  - component: {fileID: -6506182701493847543}
+  - component: {fileID: -1023527157847582853}
   - component: {fileID: 14871164405706576}
   - component: {fileID: 3459336260924187184}
-  - component: {fileID: -1023527157847582853}
-  - component: {fileID: -6506182701493847543}
   - component: {fileID: 7559314112169231877}
   m_Layer: 6
   m_Name: PlayerCharacterV3
@@ -402,6 +402,55 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 629533877819066296}
+--- !u!114 &-6506182701493847543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3162571151937909349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66baf776f1428c74f9abc313f2e2eadf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ServerCharacter
+  ShowTopMostFoldoutHeaderGroup: 1
+  currentChunk: {x: 0, y: 0}
+  FacingRight:
+    m_InternalValue: 0
+  EquippedWeaponIndex:
+    m_InternalValue: 0
+  clientCharacter: {fileID: -1023527157847582853}
+--- !u!114 &-1023527157847582853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3162571151937909349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ae209d18372a5488b1de2d2743d5d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClientCharacter
+  ShowTopMostFoldoutHeaderGroup: 1
+  input:
+    Move: {x: 0, y: 0}
+    Look: {x: 0, y: 0}
+    Attack: 0
+  cursorPosition: {x: 0, y: 0, z: 0}
+  movementVector: {x: 0, y: 0}
+  facingVector: {x: 0, y: 0}
+  equippedWeaponType: 0
+  currentChunk: {x: 0, y: 0}
+  rb: {fileID: 7626085548226502691}
+  serverCharacter: {fileID: -6506182701493847543}
+  interactionHandler: {fileID: 7559314112169231877}
+  clientCharacterWeapon: {fileID: 2358968841754274346}
+  spriteRenderer: {fileID: 4103096533881396164}
+  movementSpeed: 3
+  attackSpeed: 0.5
+  projectileSpeed: 10
 --- !u!114 &14871164405706576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -482,55 +531,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   impactAmountParameterName: _ImpactAmount
   impactColorParameterName: _ImpactColor
---- !u!114 &-1023527157847582853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3162571151937909349}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3ae209d18372a5488b1de2d2743d5d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClientCharacter
-  ShowTopMostFoldoutHeaderGroup: 1
-  input:
-    Move: {x: 0, y: 0}
-    Look: {x: 0, y: 0}
-    Attack: 0
-  cursorPosition: {x: 0, y: 0, z: 0}
-  movementVector: {x: 0, y: 0}
-  facingVector: {x: 0, y: 0}
-  equippedWeaponType: 0
-  currentSector: {x: 0, y: 0}
-  rb: {fileID: 7626085548226502691}
-  serverCharacter: {fileID: -6506182701493847543}
-  interactionHandler: {fileID: 7559314112169231877}
-  clientCharacterWeapon: {fileID: 2358968841754274346}
-  spriteRenderer: {fileID: 4103096533881396164}
-  movementSpeed: 3
-  attackSpeed: 0.5
-  projectileSpeed: 10
---- !u!114 &-6506182701493847543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3162571151937909349}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66baf776f1428c74f9abc313f2e2eadf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ServerCharacter
-  ShowTopMostFoldoutHeaderGroup: 1
-  currentSector: {x: 0, y: 0}
-  FacingRight:
-    m_InternalValue: 0
-  EquippedWeaponIndex:
-    m_InternalValue: 0
-  clientCharacter: {fileID: -1023527157847582853}
 --- !u!114 &7559314112169231877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,7 +714,7 @@ Transform:
   m_GameObject: {fileID: 6596608742631662529}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.402, y: 0, z: 0}
+  m_LocalPosition: {x: 0.54, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -767,7 +767,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: -1294915138221150633, guid: 3d9bb24622344f040addb1471f2e2039, type: 3}
+  m_Sprite: {fileID: -4553443078137133218, guid: e9b7c20d12e7b8d41aec317853de408d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -791,21 +791,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClientNetworkAnimator
   ShowTopMostFoldoutHeaderGroup: 1
-  TransitionStateInfoList:
-  - IsCrossFadeExit: 0
-    Layer: 0
-    OriginatingState: 223348798
-    DestinationState: -1776738909
-    TransitionDuration: 0
-    TriggerNameHash: 1080829965
-    TransitionIndex: 0
-  - IsCrossFadeExit: 0
-    Layer: 0
-    OriginatingState: -2033269730
-    DestinationState: -1198518058
-    TransitionDuration: 0
-    TriggerNameHash: 1080829965
-    TransitionIndex: 1
+  TransitionStateInfoList: []
   m_Animator: {fileID: 96300761909634408}
 --- !u!95 &96300761909634408
 Animator:
