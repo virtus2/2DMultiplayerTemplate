@@ -5,14 +5,24 @@ using UnityEngine;
 
 public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 {
-    [Header("ReadOnly Variables")]
-    [SerializeField] private Vector2Int currentChunk;
+    public bool IsNpc => isNpc;
 
     public NetworkVariable<bool> FacingRight;
     public NetworkVariable<int> EquippedWeaponIndex;
 
+    [Header("ReadOnly Variables")]
+    [SerializeField] private Vector2Int currentChunk;
+
+    [Header("References")]
     [SerializeField] private ClientCharacter clientCharacter;
+
+    [Header("Gameplay Variables")]
+    [SerializeField] private bool isNpc;
+    [SerializeField] private int aiType;
+
+
     private Player ownerPlayer;
+    private AIBrain aiBrain;
 
     public override void OnNetworkSpawn()
     {
@@ -23,17 +33,37 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
         }
 
         currentChunk = new Vector2Int(int.MinValue, int.MinValue);
-        SetOwnerPlayer();
+
+        if (isNpc)
+        {
+            SetAI();
+        }
+        else
+        {
+            SetOwnerPlayer();
+        }
     }
 
     private void SetOwnerPlayer()
     {
+        // For server, Set character reference of Player component.
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(OwnerClientId, out NetworkClient client))
             return;
 
         bool isOwner = OwnerClientId == NetworkManager.LocalClientId;
         ownerPlayer = client.PlayerObject.GetComponent<Player>();
         ownerPlayer.SetPlayerCharacter(clientCharacter);
+    }
+
+    private void SetAI()
+    {
+        aiBrain = GetComponent<AIBrain>();
+    }
+
+    private void Update()
+    {
+        if(isNpc && aiBrain)
+            aiBrain.UpdateAI();
     }
 
     private void FixedUpdate()

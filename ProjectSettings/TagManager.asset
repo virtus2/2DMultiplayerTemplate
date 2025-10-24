@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - AttackTrigger
+  - NPC
   layers:
   - Default
   - TransparentFX
@@ -39,8 +40,17 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 2052369959
+    locked: 0
+  - name: Foreground
+    uniqueID: 252055037
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Object
+    uniqueID: 1655036783
     locked: 0
   m_RenderingLayers:
   - Default

@@ -5,7 +5,6 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 {
     [Header("ReadOnly Variables")]
     [SerializeField] private CharacterControlInput input;
-    [SerializeField] private Vector3 cursorPosition;
     [SerializeField] private Vector2 movementVector;
     [SerializeField] private Vector2 facingVector;
     [SerializeField] private int equippedWeaponType = 0;
@@ -28,7 +27,8 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     public override void OnNetworkSpawn()
     {
-        interactionHandler.enabled = IsOwner;
+        if(interactionHandler)
+            interactionHandler.enabled = IsOwner;
 
         if (!IsOwner)
         {
@@ -39,8 +39,12 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
             return;
         }
 
-        SetOwnerPlayer();
-        HandleEquipInput(true, 0);
+        if (!serverCharacter.IsNpc)
+        {
+            SetOwnerPlayer();
+            HandleEquipInput(true, 0);
+        }
+
 
         currentChunk = new Vector2Int(int.MinValue, int.MinValue);
     }
@@ -88,7 +92,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         // Update facing vector using physics movement
         facingVector = movementVector.normalized;
 
-        clientCharacterWeapon.HandleCursorPosition(cursorPosition);
+        clientCharacterWeapon.HandleCursorPosition(input.Look);
     }
 
     private void UpdateFacing()
@@ -172,7 +176,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
         }
         else if (equippedWeaponType == 1)
         {
-            Vector2 direction = cursorPosition - transform.position;
+            Vector2 direction = input.Look - (Vector2)transform.position;
             AttackRangedWeapon(transform.position, direction.normalized, projectileSpeed);
         }
         clientCharacterWeapon.HandleAttack();
@@ -227,7 +231,7 @@ public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 
     public void HandleMousePosition(in Vector3 worldPosition)
     {
-        cursorPosition = worldPosition;
+        input.Look = worldPosition;
     }
 
     public void HandleMoveInput(in Vector2 moveInput)

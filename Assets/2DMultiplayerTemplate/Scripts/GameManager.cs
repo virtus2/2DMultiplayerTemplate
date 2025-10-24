@@ -224,6 +224,10 @@ public class GameManager : MonoBehaviour
                         CreateBuilding(Vector3.zero, Quaternion.identity);
                     }
                 }
+                if (GUILayout.Button("Create AI Character"))
+                {
+                    CreateNetworkObject(aiCharacterPrefab, 0, Vector2.zero, Quaternion.identity);
+                }
             }
             if (GUILayout.Button("Disconnect"))
             {
@@ -236,7 +240,7 @@ public class GameManager : MonoBehaviour
     public void CreatePlayerCharacterOnClientConnected(ulong clientId)
     {
         Vector3 spawnPosition = Random.insideUnitCircle * 3f;
-        CreatePlayerCharacter(clientId, spawnPosition, Quaternion.identity);
+        CreateNetworkObject(playerCharacterPrefab, clientId, Vector2.zero, Quaternion.identity);
     }
 
     public void InitializeServerChunkOnClientConnected(ulong clientId)
@@ -244,22 +248,31 @@ public class GameManager : MonoBehaviour
         ServerChunkLoader.HandleClientConnected(clientId);
     }
 
-    private void CreatePlayerCharacter(ulong clientId, in Vector3 position, in Quaternion rotation)
+    public NetworkObject CreateNetworkObject(NetworkObject networkObject, ulong ownerClientId, in Vector2 position, in Quaternion rotation)
     {
-        playerCharacterPrefab.InstantiateAndSpawn(networkManager,
-            ownerClientId: clientId,
+        networkObject.InstantiateAndSpawn(networkManager,
+            ownerClientId: ownerClientId,
             position: position,
             rotation: rotation
         );
+        return networkObject;
     }
 
-    private void CreateAICharacter(in Vector3 position, in Quaternion rotation)
+    public T CreateNetworkObject<T>(NetworkObject networkObject, ulong ownerClientId, in Vector2 position, in Quaternion rotation) where T : MonoBehaviour
     {
-        aiCharacterPrefab.InstantiateAndSpawn(networkManager,
-            ownerClientId: 0,
+        networkObject.InstantiateAndSpawn(networkManager,
+            ownerClientId: ownerClientId,
             position: position,
             rotation: rotation
         );
+
+        if (networkObject.TryGetComponent(out T component))
+        {
+            return component;
+        }
+
+        Debug.LogWarning($"{networkObject.name} is spawned, But there is no component {nameof(T)}");
+        return null;
     }
 
     private void CreateBuilding(in Vector3 position, in Quaternion rotation)
