@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &20395720813296239
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5704393559357083098, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_Name
+      value: AICharacterV3_DefaultMelee
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052196071177200501, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1296153959
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707349738157530015, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 697487483960029272, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5704393559357083098, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+      insertIndex: 11
+      addedObject: {fileID: 7290565848504541337}
+  m_SourcePrefab: {fileID: 100100000, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+--- !u!114 &3135882926170742136 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3156057026201462551, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+  m_PrefabInstance: {fileID: 20395720813296239}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720247128782206901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ae209d18372a5488b1de2d2743d5d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClientCharacter
+--- !u!195 &5538639331475427327 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: -3704977137714186864, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+  m_PrefabInstance: {fileID: 20395720813296239}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5720247128782206901 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5704393559357083098, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+  m_PrefabInstance: {fileID: 20395720813296239}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7290565848504541337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720247128782206901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4f5c14754c7f634094d064b763679f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIBrain_DefaultMelee
+  serverCharacter: {fileID: 8938107144031900025}
+  clientCharacter: {fileID: 3135882926170742136}
+  agent: {fileID: 5538639331475427327}
+  elapsedTime: 0
+  idleTime: 1.5
+  wanderTime: 3
+  isIdle: 0
+  range: 0.2
+--- !u!114 &8938107144031900025 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8953997029552728854, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
+  m_PrefabInstance: {fileID: 20395720813296239}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720247128782206901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66baf776f1428c74f9abc313f2e2eadf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ServerCharacter

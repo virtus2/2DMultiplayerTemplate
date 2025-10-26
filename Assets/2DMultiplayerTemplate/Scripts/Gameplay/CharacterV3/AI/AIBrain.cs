@@ -1,7 +1,9 @@
 using NavMeshPlus.Extensions;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using static Unity.Multiplayer.Editor.EditorMultiplayerRolesManager.AutomaticSelection;
 
 public abstract class AIBrain : MonoBehaviour
 {
@@ -31,5 +33,18 @@ public abstract class AIBrain : MonoBehaviour
             return hit.position;
         }
         return randomPosition;
+    }
+
+    protected ServerCharacter FindTargetPlayer()
+    {
+        foreach (var kvp in GameManager.Instance.PlayerCharacters)
+        {
+            ServerCharacter target = kvp.Value;
+            if (target.IsDead) continue;
+            if (!ServerChunkLoader.IsNeighborChunk(serverCharacter.ChunkPosition, target.ChunkPosition)) continue;
+
+            return target;
+        }
+        return null;
     }
 }

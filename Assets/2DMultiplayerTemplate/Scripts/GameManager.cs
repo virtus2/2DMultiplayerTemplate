@@ -25,25 +25,30 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [SerializeField] private ServerChunkLoader serverChunkLoader;
-    [SerializeField] private ClientChunkLoader clientChunkLoader;
-
-    [Header("Test")]
-    public int BuildingIndex = 0;
-    public int BuildingLength = 12;
-
-
-    [Header("Projectiles")]
-    public ClientProjectile ClientProjectilePrefab;
-    public NetworkObject ServerProjectilePrefab;
+    public IReadOnlyDictionary<ulong, ServerCharacter> PlayerCharacters => playerCharacters;
 
     [Header("Prefabs")]
     [SerializeField] private NetworkObject playerCharacterPrefab;
     [SerializeField] private NetworkObject aiCharacterPrefab;
     [SerializeField] private NetworkObject buildingPrefab;
 
+    [Header("Chunk loaders")]
+    [SerializeField] private ServerChunkLoader serverChunkLoader;
+    [SerializeField] private ClientChunkLoader clientChunkLoader;
+
+    [Header("Projectiles")]
+    public ClientProjectile ClientProjectilePrefab;
+    public NetworkObject ServerProjectilePrefab;
+
     private NetworkManager networkManager;
     private ConnectionManager connectionManager;
+    private Dictionary<ulong, ServerCharacter> playerCharacters = new Dictionary<ulong, ServerCharacter>();
+
+
+    // Temporary variables (need refactor)
+    [Header("Test")]
+    public int BuildingIndex = 0;
+    public int BuildingLength = 12;
 
     [Header("MainMenu")]
     // MainMenu
@@ -228,6 +233,13 @@ public class GameManager : MonoBehaviour
                 {
                     CreateNetworkObject(aiCharacterPrefab, 0, Vector2.zero, Quaternion.identity);
                 }
+                if (GUILayout.Button("Create AI Character x 1000"))
+                {
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        CreateNetworkObject(aiCharacterPrefab, 0, Vector2.zero, Quaternion.identity);
+                    }
+                }
             }
             if (GUILayout.Button("Disconnect"))
             {
@@ -240,7 +252,8 @@ public class GameManager : MonoBehaviour
     public void CreatePlayerCharacterOnClientConnected(ulong clientId)
     {
         Vector3 spawnPosition = Random.insideUnitCircle * 3f;
-        CreateNetworkObject(playerCharacterPrefab, clientId, Vector2.zero, Quaternion.identity);
+        ServerCharacter serverCharacter = CreateNetworkObject<ServerCharacter>(playerCharacterPrefab, clientId, Vector2.zero, Quaternion.identity);
+        playerCharacters.Add(clientId, serverCharacter);
     }
 
     public void InitializeServerChunkOnClientConnected(ulong clientId)
@@ -250,28 +263,28 @@ public class GameManager : MonoBehaviour
 
     public NetworkObject CreateNetworkObject(NetworkObject networkObject, ulong ownerClientId, in Vector2 position, in Quaternion rotation)
     {
-        networkObject.InstantiateAndSpawn(networkManager,
+        NetworkObject obj = networkObject.InstantiateAndSpawn(networkManager,
             ownerClientId: ownerClientId,
             position: position,
             rotation: rotation
         );
-        return networkObject;
+        return obj;
     }
 
     public T CreateNetworkObject<T>(NetworkObject networkObject, ulong ownerClientId, in Vector2 position, in Quaternion rotation) where T : MonoBehaviour
     {
-        networkObject.InstantiateAndSpawn(networkManager,
+        NetworkObject obj = networkObject.InstantiateAndSpawn(networkManager,
             ownerClientId: ownerClientId,
             position: position,
             rotation: rotation
         );
 
-        if (networkObject.TryGetComponent(out T component))
+        if (obj.TryGetComponent(out T component))
         {
             return component;
         }
 
-        Debug.LogWarning($"{networkObject.name} is spawned, But there is no component {nameof(T)}");
+        Debug.LogWarning($"{obj.name} is spawned, But there is no component {nameof(T)}");
         return null;
     }
 

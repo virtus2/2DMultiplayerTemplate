@@ -6,6 +6,8 @@ using UnityEngine;
 public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 {
     public bool IsNpc => isNpc;
+    public bool IsDead => isDead;
+    public Vector2Int ChunkPosition => currentChunk;
 
     public NetworkVariable<bool> FacingRight;
     public NetworkVariable<int> EquippedWeaponIndex;
@@ -23,6 +25,7 @@ public class ServerCharacter : NetworkBehaviour, IAttacker, IDamageable
 
     private Player ownerPlayer;
     private AIBrain aiBrain;
+    private bool isDead;
 
     public override void OnNetworkSpawn()
     {

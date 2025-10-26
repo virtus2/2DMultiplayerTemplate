@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class ClientCharacter : NetworkBehaviour, IPlayerCharacter
 {
+    public float MovementSpeed => movementSpeed;
+
     [Header("ReadOnly Variables")]
     [SerializeField] private CharacterControlInput input;
     [SerializeField] private Vector2 movementVector;

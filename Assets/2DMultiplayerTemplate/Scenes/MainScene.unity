@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 6309468}
   - component: {fileID: 6309467}
   - component: {fileID: 6309470}
+  - component: {fileID: 6309471}
   m_Layer: 0
   m_Name: CinemachineCamera
   m_TagString: Untagged
@@ -163,7 +164,7 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 1, y: 1, z: 1}
+  Damping: {x: 0, y: 0, z: 0}
   Lookahead:
     Enabled: 0
     Time: 0
@@ -194,7 +195,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 40
-    OrthographicSize: 5
+    OrthographicSize: 4
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0
@@ -251,6 +252,18 @@ MonoBehaviour:
     FrequencyGain: 1
     Duration: 1
     m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &6309471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6309466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a8a05de0ac134f4f9d01bef6b9da077, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachinePixelPerfect
 --- !u!1 &75376289
 GameObject:
   m_ObjectHideFlags: 0
@@ -1419,7 +1432,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Multiplayer.Tools.NetworkSimulator.Runtime::Unity.Multiplayer.Tools.NetworkSimulator.Runtime.NetworkSimulator
   m_PresetAsset: {fileID: 0}
   m_PresetReference:
-    rid: 6739371225212780673
+    rid: 6739371362864070742
   m_Scenario:
     rid: -2
   m_IsScenarioSettingsFolded: 1
@@ -1429,7 +1442,7 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 6739371225212780673
+    - rid: 6739371362864070742
       type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime, asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
       data:
         <Name>k__BackingField: None
@@ -11465,7 +11478,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -11513,7 +11526,7 @@ MonoBehaviour:
   IgnoreTimeScale: 0
   WorldUpOverride: {fileID: 0}
   ChannelMask: -1
-  UpdateMethod: 2
+  UpdateMethod: 1
   BlendUpdateMethod: 1
   LensModeOverride:
     Enabled: 0
@@ -11889,15 +11902,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65656252809eec840afba8d3a6c6a519, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  playerCharacterPrefab: {fileID: 2960817192275098128, guid: f859c7174eaf6504d90ad8088734d38e, type: 3}
+  aiCharacterPrefab: {fileID: 7031837806841272602, guid: 1d9cde207a002434db32d8f6b82e0f7d, type: 3}
+  buildingPrefab: {fileID: 7281226962543541757, guid: 5141374e29c0e1c43ac914a7ac3c7500, type: 3}
   serverChunkLoader: {fileID: 1013771988}
   clientChunkLoader: {fileID: 1142676005}
-  BuildingIndex: 0
-  BuildingLength: 50
   ClientProjectilePrefab: {fileID: 8280340353424970479, guid: 344210a622fe65044bbabd9bd96b0903, type: 3}
   ServerProjectilePrefab: {fileID: -4623957774247457238, guid: 510f7a8768c3225419572cf8fd9c862c, type: 3}
-  playerCharacterPrefab: {fileID: 2960817192275098128, guid: f859c7174eaf6504d90ad8088734d38e, type: 3}
-  aiCharacterPrefab: {fileID: 7052196071177200501, guid: 4d76ba623892a474abeb29a54876ac95, type: 3}
-  buildingPrefab: {fileID: 7281226962543541757, guid: 5141374e29c0e1c43ac914a7ac3c7500, type: 3}
+  BuildingIndex: 0
+  BuildingLength: 50
   prevMainMenuState: 0
   currMainMenuState: 0
 --- !u!1 &2118484929

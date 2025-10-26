@@ -107,9 +107,9 @@ public class ServerChunkLoader : MonoBehaviour
         }
     }
 
-    private void DespawnChunkObjects(ulong clientId, Vector2Int sector)
+    private void DespawnChunkObjects(ulong clientId, Vector2Int chunk)
     {
-        if (chunkObjects.TryGetValue(sector, out var networkObjects))
+        if (chunkObjects.TryGetValue(chunk, out var networkObjects))
         {
             foreach (var obj in networkObjects)
             {
@@ -119,9 +119,9 @@ public class ServerChunkLoader : MonoBehaviour
         }
     }
 
-    private void SpawnChunkObjects(ulong clientId, Vector2Int sector)
+    private void SpawnChunkObjects(ulong clientId, Vector2Int chunk)
     {
-        if (chunkObjects.TryGetValue(sector, out var networkObjects))
+        if (chunkObjects.TryGetValue(chunk, out var networkObjects))
         {
             foreach (var obj in networkObjects)
             {
@@ -141,5 +141,11 @@ public class ServerChunkLoader : MonoBehaviour
         int distanceX = Mathf.Abs(characterChunkPosition.x - objectChunkPosition.x);
         int distanceY = Mathf.Abs(characterChunkPosition.y - objectChunkPosition.y);
         return distanceX >= 0 && distanceX < 2 && distanceY >= 0 && distanceY < 2;
+    }
+
+    public static bool IsNeighborChunk(in Vector2Int src, in Vector2Int dst)
+    {
+        Vector2Int diff = dst - src;
+        return diff.sqrMagnitude <= 4;
     }
 }
